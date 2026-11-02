@@ -266,3 +266,48 @@ del archivo de ejercicios editable.
 Para una futura interfaz, ejecutar admite las funciones entrada(prompt) y
 salida(texto). Esto permitirá conectar diálogos de captura y un panel de salida
 sin cambiar las reglas del lenguaje. La interfaz todavía no está implementada.
+
+## Paso 5: interfaz gráfica de escritorio
+
+Abre una terminal en costenol y ejecuta:
+
+    python interfaz.py
+
+En Windows también puedes usar `py interfaz.py` si ese es tu lanzador habitual.
+Requiere Python 3.10+ con Tcl/Tk instalado; no necesita paquetes de pip.
+Si aparece un error de tkinter/Tcl/Tk, revisa la instalación de Python y su
+componente Tcl/Tk. `python -m tkinter` permite comprobar que abre una ventana.
+
+### Uso
+
+- Nuevo, Abrir, Guardar y Guardar como trabajan con archivos .cost en UTF-8.
+- Al reemplazar o cerrar un documento modificado se pregunta si deseas guardarlo.
+- F5 / Analizar valida léxico, sintaxis y semántica sin ejecutar capturas.
+- F6 / Ejecutar valida primero y ejecuta el contenido actual del editor,
+  aunque todavía no lo hayas guardado.
+- Captura abre un diálogo. Cancelar detiene la ejecución y muestra su ubicación.
+- El panel Resultados muestra mensajes, datos introducidos y errores.
+- Los errores del lenguaje incluyen su categoría, línea y columna; la línea
+  se resalta y el cursor se coloca en la columna indicada.
+- Corregir el código quita el resaltado; analiza de nuevo para revisar el cambio.
+- Ctrl+N crea un documento, Ctrl+O abre y Ctrl+S guarda.
+- Tab inserta cuatro espacios. Hay números de línea y barras de desplazamiento.
+
+Prueba abriendo ejemplo_ejecucion.cost, pulsa F5 y luego F6. Introduce Ana,
+20, 12,5 y Verdadero. Para probar un error, escribe `edad Entero; edad="Hola";`
+y pulsa F5. Para un error de ejecución usa `Mensaje.Texto(1/0);` y pulsa F6.
+
+### Implementación y límites
+
+interfaz.py reutiliza analizar_semantica y ejecutar. La ventana usa diálogos
+para entrada y un panel para salida. Los botones y el editor se bloquean durante
+el procesamiento para evitar ejecutar o cambiar el documento simultáneamente.
+Se informa el primer error. No hay resaltado de sintaxis, depurador ni botón
+Detener. El procesamiento es síncrono y está pensado para programas educativos
+cortos; documentos muy grandes pueden mantener la ventana ocupada.
+
+Las pruebas test_interfaz.py crean una ventana oculta y verifican análisis,
+errores, resaltado, capturas, cancelación y archivos. Requieren Tcl/Tk funcional;
+si no está disponible, aparecen como omitidas (skipped), no como verificadas.
+En el entorno de desarrollo no se pudo iniciar Tcl/Tk, por lo que la comprobación
+visual de la ventana queda pendiente en la instalación local.

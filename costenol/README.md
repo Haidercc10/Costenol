@@ -39,3 +39,88 @@ Los literales lógicos y los operadores lógicos quedan pendientes de definició
 Este programa solo reconoce tokens. Puede tokenizar edad = ;, aunque esa instrucción
 sea incorrecta. El parser del siguiente paso verificará la estructura; después
 validaremos declaraciones y tipos, y añadiremos ejecución básica.
+
+## Paso 2: analizador sintáctico
+
+Ejecuta desde esta carpeta:
+
+    python parser.py ejemplo_sintactico.cost
+    python parser.py ejemplo_sintactico.cost --arbol
+    python -m unittest test_parser.py -v
+
+El primer comando valida; el segundo también muestra el árbol sintáctico (AST)
+en JSON; el tercero ejecuta las pruebas automáticas. El lexer sigue disponible
+con su comando original. No se modificó ejemplo.cost para conservar tus ejercicios.
+
+### Cómo funciona el parser
+
+1. analizar(codigo) llama al lexer y entrega sus tokens al Parser.
+2. actual consulta el token actual; pos indica cuánto se ha consumido.
+3. aceptar consume un token si coincide; exigir informa un error si falta.
+4. instruccion selecciona declaración, asignación, mensaje o condicional.
+5. bloque reúne instrucciones y se detiene ante Sino, FinSi o fin del archivo,
+   según corresponda. Cada condicional procesa su propio bloque anidado.
+6. expresion, suma, producto, unaria y primaria construyen las expresiones.
+   La multiplicación y división tienen prioridad sobre suma y resta; los
+   paréntesis permiten cambiar el orden. Los operadores aritméticos binarios
+   son asociativos a la izquierda. La comparación tiene menor prioridad.
+7. Cada función devuelve diccionarios que forman el AST. No calcula valores.
+
+### Gramática implementada (EBNF)
+
+    programa     = { instruccion } ;
+    instruccion  = declaracion | asignacion | mensaje | condicional ;
+    declaracion  = IDENTIFICADOR tipo ";" ;
+    tipo         = "Texto" | "Entero" | "Real" | "Logico" ;
+    asignacion   = IDENTIFICADOR "=" expresion ";" ;
+    mensaje      = "Mensaje" "." "Texto" "(" expresion ")" ";" ;
+    condicional  = "Si" "(" expresion ")" { instruccion }
+                   [ "Sino" { instruccion } ] "FinSi" ;
+    expresion    = suma [ comparador suma ] ;
+    comparador   = "==" | "!=" | ">" | "<" | ">=" | "<=" ;
+    suma         = producto { ("+" | "-") producto } ;
+    producto     = unaria { ("*" | "/") unaria } ;
+    unaria       = ("+" | "-") unaria | primaria ;
+    primaria     = NUM_ENTERO | NUM_REAL | CADENA | IDENTIFICADOR
+                   | captura | "(" expresion ")" ;
+    captura      = "Captura" "." tipo "(" ")" ;
+
+Las llaves indican repetición, los corchetes indican una parte opcional y
+las comillas representan texto literal del lenguaje. Estas llaves y corchetes
+no se escriben en los programas Costeñol.
+
+### Decisiones de esta versión
+
+- Mensaje.Texto recibe una expresión (incluye cadenas y variables). Es una
+  ampliación provisional respecto al ejemplo literal del enunciado.
+- Se permiten bloques vacíos, Sino opcional y condicionales anidados.
+- El salto de línea es espacio de separación, no termina una instrucción.
+- Las declaraciones, asignaciones y mensajes terminan con punto y coma;
+  Si, Sino y FinSi no llevan punto y coma.
+- Solo se permite una comparación por nivel de expresión; no se admiten
+  comparaciones encadenadas como a < b < c.
+- Los valores literales lógicos y operadores lógicos siguen pendientes.
+  Sí se reconoce una declaración Logico y Captura.Logico().
+- No se exige un espacio concreto después de Si: el lexer ignora espacios.
+- Se detiene en el primer error; no recupera ni enumera errores posteriores.
+
+### Ejercicios de errores sintácticos
+
+Crea un archivo prueba_error.cost con un solo ejemplo a la vez y ejecuta:
+
+    python parser.py prueba_error.cost
+
+Prueba `edad = ;` para ver la ausencia de una expresión.
+Prueba `edad Entero` para ver la ausencia del punto y coma.
+Prueba `Si (edad > 18)` para ver la ausencia de FinSi.
+Prueba `Mensaje.Texto("Hola";` para ver la ausencia de un paréntesis.
+
+Los errores pueden apuntar al token siguiente, que es donde se detectó la
+omisión, o al final del archivo si no hay más tokens.
+
+### Límites y siguiente etapa
+
+Un resultado sintáctico correcto no garantiza que el programa tenga sentido.
+`sinDeclarar = "texto" + 2;` todavía pasa: usa piezas y estructura válidas.
+El análisis semántico deberá comprobar declaraciones, tipos y que las condiciones
+sean lógicas. Después construiremos la ejecución básica. No se usa eval ni exec.

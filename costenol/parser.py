@@ -1,8 +1,12 @@
-﻿"""Parser descendente recursivo para Costeñol. No ejecuta el programa."""
+"""Parser descendente recursivo para Costeñol. No ejecuta el programa."""
 import argparse
 import json
 from pathlib import Path
 from lexer import Token, ErrorLexico, tokenizar
+
+
+def ubicacion(token):
+    return {"linea": token.linea, "columna": token.columna}
 
 
 class ErrorSintactico(ValueError):
@@ -61,11 +65,11 @@ class Parser:
                 tipo = self.actual
                 self.pos += 1
                 self.exigir('PUNTO_Y_COMA', "';' después de la declaración")
-                return {'nodo': 'Declaracion', 'nombre': nombre.valor, 'tipo': tipo.valor}
+                return {'nodo': 'Declaracion', 'nombre': nombre.valor, 'tipo': tipo.valor, **ubicacion(nombre)}
             self.exigir('ASIGNACION', "un tipo de dato o '=' después del identificador")
             valor = self.expresion()
             self.exigir('PUNTO_Y_COMA', "';' después de la asignación")
-            return {'nodo': 'Asignacion', 'nombre': nombre.valor, 'valor': valor}
+            return {'nodo': 'Asignacion', 'nombre': nombre.valor, 'valor': valor, **ubicacion(nombre)}
         if self.aceptar('MENSAJE'):
             self.exigir('PUNTO', "'.' después de Mensaje")
             self.exigir('TEXTO', 'Texto después de Mensaje.')
@@ -94,7 +98,7 @@ class Parser:
 
     @staticmethod
     def binaria(operador, izquierda, derecha):
-        return {'nodo': 'Binaria', 'operador': operador.valor,
+        return {'nodo': 'Binaria', 'operador': operador.valor, **ubicacion(operador),
                 'izquierda': izquierda, 'derecha': derecha}
 
     def suma(self):
@@ -116,16 +120,16 @@ class Parser:
     def unaria(self):
         operador = self.aceptar('SUMA', 'RESTA')
         if operador:
-            return {'nodo': 'Unaria', 'operador': operador.valor, 'valor': self.unaria()}
+            return {'nodo': 'Unaria', 'operador': operador.valor, **ubicacion(operador), 'valor': self.unaria()}
         return self.primaria()
 
     def primaria(self):
         literal = self.aceptar('NUM_ENTERO', 'NUM_REAL', 'CADENA')
         if literal:
-            return {'nodo': 'Literal', 'tipo': literal.tipo, 'lexema': literal.valor}
+            return {'nodo': 'Literal', 'tipo': literal.tipo, 'lexema': literal.valor, **ubicacion(literal)}
         nombre = self.aceptar('IDENTIFICADOR')
         if nombre:
-            return {'nodo': 'Variable', 'nombre': nombre.valor}
+            return {'nodo': 'Variable', 'nombre': nombre.valor, **ubicacion(nombre)}
         if self.aceptar('CAPTURA'):
             self.exigir('PUNTO', "'.' después de Captura")
             if self.actual.tipo not in TIPOS:
@@ -134,7 +138,7 @@ class Parser:
             self.pos += 1
             self.exigir('PAREN_ABRE', "'(' después del tipo de captura")
             self.exigir('PAREN_CIERRA', "')': Captura no recibe argumentos")
-            return {'nodo': 'Captura', 'tipo': tipo.valor}
+            return {'nodo': 'Captura', 'tipo': tipo.valor, **ubicacion(tipo)}
         if self.aceptar('PAREN_ABRE'):
             valor = self.expresion()
             self.exigir('PAREN_CIERRA', "')' para cerrar la expresión")

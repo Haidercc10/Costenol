@@ -1,0 +1,18 @@
+﻿// Declaraciones y asignaciones compatibles //
+edad Entero;
+precio;
+nombre Texto;
+esMayor Logico;
+edad = Captura.Entero();
+precio = 10 + 2,5;
+nombre = "Ana" + " Maria";
+esMayor = edad >= 18;
+resultado Texto;
+Si (esMayor)
+    resultado = "Mayor de edad";
+Sino
+    resultado = "Menor de edad";
+FinSi
+Mensaje.Texto(nombre);
+Mensaje.Texto(resultado);
+Mensaje.Texto(precio);

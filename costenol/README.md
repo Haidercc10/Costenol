@@ -124,3 +124,71 @@ Un resultado sintáctico correcto no garantiza que el programa tenga sentido.
 `sinDeclarar = "texto" + 2;` todavía pasa: usa piezas y estructura válidas.
 El análisis semántico deberá comprobar declaraciones, tipos y que las condiciones
 sean lógicas. Después construiremos la ejecución básica. No se usa eval ni exec.
+
+## Paso 3: análisis semántico
+
+Desde la carpeta costenol:
+
+    python semantico.py ejemplo_semantico.cost
+    python semantico.py ejemplo_semantico.cost --simbolos
+    python semantico.py error_semantico.cost
+    python -m unittest discover -p "test_*.py" -v
+
+El tercer comando falla intencionalmente con ErrorSemantico en línea 3,
+columna 1: no se puede asignar Texto a edad de tipo Entero. Los comandos
+anteriores de lexer.py y parser.py siguen funcionando por separado.
+
+### Recorrido y tabla de símbolos
+
+analizar_semantica llama al parser, que primero llama al lexer. Después,
+AnalizadorSemantico recorre el árbol sin ejecutar código ni pedir entradas.
+La tabla registra nombre, tipo, ubicación de declaración e inicialización;
+no guarda valores calculados. expresion infiere el tipo de cada expresión;
+bloque comprueba las instrucciones. Se informa el primer error y se termina.
+El parser ahora conserva línea y columna en los nodos necesarios para ubicar
+los errores semánticos. La gramática no cambió.
+
+### Reglas adoptadas para esta versión
+
+Estas decisiones concretan aspectos que el enunciado no define por completo:
+
+- Se declara antes de usar. No se puede repetir un nombre visible.
+- La declaración no asigna un valor inicial. Leer una variable sin asignación
+  previa es error; se admite declarar una variable y no usarla.
+- Cada rama de Si/Sino tiene alcance local para sus declaraciones. Los nombres
+  del bloque exterior son visibles dentro. No se permite ocultarlos con otra
+  declaración. Las variables locales no existen fuera de la rama y las dos
+  ramas pueden declarar, de forma independiente, el mismo nombre.
+- Una asignación a una variable exterior se considera segura después de un
+  condicional solo si estaba inicializada antes o queda inicializada en ambas
+  ramas. Sin Sino, también se contempla que no se ejecute el bloque Si.
+  No se calculan condiciones constantes para eliminar caminos posibles.
+- Se permite Entero hacia Real. No se permite Real hacia Entero ni otras
+  conversiones implícitas, tampoco entre Logico y Entero.
+- +, -, * requieren números; + permite además Texto + Texto (concatenación).
+  Una operación numérica produce Real si alguno de sus operandos es Real.
+- / siempre produce Real, incluso 4 / 2. Los signos unarios exigen números.
+- == y != admiten dos tipos iguales o la pareja Entero/Real.
+  <, >, <= y >= requieren números. Toda comparación produce Logico.
+- Si exige una expresión de tipo Logico.
+- Captura.Tipo() tiene el tipo indicado sin leer datos durante esta etapa.
+- Mensaje.Texto admite expresiones de los cuatro tipos. La futura ejecución
+  deberá convertir el valor a texto para mostrarlo.
+- Siguen sin definirse literales ni operadores lógicos adicionales. Puedes
+  obtener Logico mediante comparaciones o Captura.Logico().
+
+### Pruebas y límites
+
+test_semantico.py verifica declaraciones, conversiones, operaciones, condiciones,
+ubicaciones, alcance local e inicialización en ramas independientes y anidadas.
+También verifica que se conserven los errores léxicos y sintácticos.
+
+Los archivos de ejercicios anteriores pueden contener errores que hayas añadido
+para practicar; las pruebas nuevas usan su propio ejemplo y casos independientes.
+
+El éxito de esta etapa confirma las reglas estáticas anteriores. No garantiza
+que una captura futura sea válida ni detecta división entre cero: esos errores
+se atenderán en ejecución. No se ejecutan instrucciones ni se usa eval/exec.
+
+Siguiente paso: intérprete que use el árbol, implemente capturas y mensajes,
+calcule expresiones y seleccione las ramas de los condicionales.

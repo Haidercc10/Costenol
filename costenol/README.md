@@ -192,3 +192,77 @@ se atenderán en ejecución. No se ejecutan instrucciones ni se usa eval/exec.
 
 Siguiente paso: intérprete que use el árbol, implemente capturas y mensajes,
 calcule expresiones y seleccione las ramas de los condicionales.
+
+## Paso 4: ejecución básica
+
+Desde esta carpeta ejecuta:
+
+    python interprete.py ejemplo_ejecucion.cost
+
+El programa primero valida TODO el código con lexer, parser y semántica.
+Solo si pasa comienza a leer datos y mostrar mensajes. Para el ejemplo escribe
+una respuesta por línea: Ana, 20, 12,5 y Verdadero. No incluyas comillas.
+Debe mostrar Hola, Ana, Mayor de edad, Asistencia confirmada y total 25,0,
+además de las preguntas. Con edad 15, ejecutará la rama Menor de edad.
+
+### Funciones principales
+
+- ejecutar(codigo): construye el árbol, valida y ejecuta. Devuelve las variables
+  globales con sus tipos y valores. No genera binarios ni usa eval o exec.
+- evaluar: convierte literales y resuelve variables, capturas y operaciones.
+- bloque: ejecuta instrucciones en orden y selecciona solo una rama de Si/Sino.
+- capturar: lee y valida la entrada de acuerdo al tipo solicitado.
+- mostrar: presenta reales con coma y lógicos como Verdadero/Falso.
+
+La ejecución conserva las reglas semánticas: las declaraciones de las ramas son
+locales y las asignaciones a variables exteriores se conservan al salir.
+Los operandos se evalúan de izquierda a derecha. Cada Mensaje.Texto añade un
+salto de línea. Una variable declarada y no usada puede quedar sin valor.
+
+### Formato de capturas
+
+- Texto: admite cualquier texto, incluso vacío; conserva espacios.
+- Entero: dígitos con signo opcional, como 12 o -5.
+- Real: dígitos con signo opcional y coma decimal opcional: 12 o -3,5.
+  No admite punto decimal, notación exponencial, NaN ni infinito en la entrada.
+- Logico: Verdadero o Falso, sin distinguir mayúsculas. No admite 1/0 ni sí/no.
+
+Las entradas numéricas y lógicas ignoran espacios en sus extremos.
+Una entrada inválida detiene el programa en el primer error, sin reintentar.
+EOF o cancelación de captura también producen ErrorEjecucion con ubicación.
+Los valores lógicos anteriores son formatos de captura, no nuevos literales
+que se puedan escribir sin comillas dentro del código fuente.
+
+### Cadenas y números
+
+En cadenas se interpretan los escapes \n, \t, \r, \" y \\.
+Un escape desconocido se informa en ejecución si esa cadena se evalúa.
+Los reales usan float de Python (precisión finita, posibles redondeos).
+Los resultados no finitos y los desbordamientos controlados generan error.
+La salida de un real puede usar notación científica para valores extremos.
+
+### Probar errores de ejecución
+
+Crea prueba_ejecucion.cost con:
+
+    divisor Entero;
+    divisor = Captura.Entero();
+    Mensaje.Texto(10 / divisor);
+
+Ejecuta `python interprete.py prueba_ejecucion.cost` e introduce 0: informará
+ErrorEjecucion, línea 3, columna 22, división entre cero. Si introduces letras,
+el error corresponde a la captura de la línea 2. Las salidas ya producidas
+antes de un error de ejecución se conservan; no se revierte el programa.
+
+### Pruebas automáticas e interfaz futura
+
+    python -m unittest discover -p "test_*.py" -v
+
+Las pruebas nuevas cubren entradas válidas e inválidas, operaciones, escapes,
+comparaciones, ramas anidadas, alcance, errores numéricos y validación completa
+antes de cualquier lectura o salida. Las pruebas semánticas ya no dependen
+del archivo de ejercicios editable.
+
+Para una futura interfaz, ejecutar admite las funciones entrada(prompt) y
+salida(texto). Esto permitirá conectar diálogos de captura y un panel de salida
+sin cambiar las reglas del lenguaje. La interfaz todavía no está implementada.

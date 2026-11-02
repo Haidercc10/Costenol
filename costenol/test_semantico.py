@@ -1,5 +1,4 @@
 import unittest
-from pathlib import Path
 from semantico import analizar_semantica, ErrorSemantico
 from lexer import ErrorLexico
 from parser import ErrorSintactico
@@ -7,10 +6,11 @@ from parser import ErrorSintactico
 
 class PruebasSemanticas(unittest.TestCase):
     def test_ejemplos(self):
-        carpeta = Path(__file__).parent
-        for nombre in ['ejemplo_semantico.cost']:
-            with self.subTest(nombre=nombre):
-                analizar_semantica((carpeta / nombre).read_text(encoding='utf-8-sig'))
+        # Caso independiente de los archivos que el estudiante edita al practicar.
+        analizar_semantica('edad Entero; edad=20; nombre Texto; nombre="Ana"; '
+                          'b Logico; b=edad>=18; resultado Texto; '
+                          'Si (b) resultado="mayor"; Sino resultado="menor"; FinSi '
+                          'Mensaje.Texto(nombre); Mensaje.Texto(resultado);')
 
     def test_capturas_y_tabla(self):
         for tipo in ['Texto', 'Entero', 'Real', 'Logico']:

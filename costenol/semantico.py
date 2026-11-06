@@ -1,4 +1,4 @@
-﻿"""Validación estática de declaraciones, tipos e inicialización de Costeñol."""
+"""Validación estática de declaraciones, tipos e inicialización de Costeñol."""
 import argparse
 import json
 from pathlib import Path
@@ -15,15 +15,22 @@ NUMERICOS = {'Entero', 'Real'}
 
 class AnalizadorSemantico:
     def error(self, nodo, mensaje):
+        """Lanza ErrorSemantico con la ubicación del nodo y la causa recibida."""
         raise ErrorSemantico(f'Línea {nodo["linea"]}, columna {nodo["columna"]}: {mensaje}')
 
     def buscar(self, nodo, simbolos):
+        """Busca el nombre del nodo en la tabla visible y devuelve su registro.
+        Lanza ErrorSemantico si no fue declarado antes de usarse.
+        """
         nombre = nodo['nombre']
         if nombre not in simbolos:
             self.error(nodo, f"variable '{nombre}' no declarada antes de su uso")
         return simbolos[nombre]
 
     def expresion(self, nodo, simbolos):
+        """Infiere y devuelve el tipo Costeñol de una expresión sin calcular su valor.
+        Valida inicialización, operandos y concatenación de texto con números.
+        """
         clase = nodo['nodo']
         if clase == 'Literal':
             return {'NUM_ENTERO': 'Entero', 'NUM_REAL': 'Real', 'CADENA': 'Texto'}[nodo['tipo']]
@@ -44,7 +51,9 @@ class AnalizadorSemantico:
             derecha = self.expresion(nodo['derecha'], simbolos)
             operador = nodo['operador']
             numericos = izquierda in NUMERICOS and derecha in NUMERICOS
-            if operador == '+' and izquierda == derecha == 'Texto':
+            if operador == '+' and (
+                    (izquierda == 'Texto' and derecha in NUMERICOS | {'Texto'})
+                    or (derecha == 'Texto' and izquierda in NUMERICOS)):
                 return 'Texto'
             if operador in {'+', '-', '*', '/'}:
                 if not numericos:
@@ -62,6 +71,9 @@ class AnalizadorSemantico:
 
     def bloque(self, instrucciones, simbolos):
         # Los nombres visibles al entrar no se pueden redeclarar ni sombrear.
+        """Recorre instrucciones y actualiza la tabla de símbolos recibida.
+        Comprueba declaraciones, asignaciones y condiciones; combina inicialización de ambas ramas.
+        """
         for nodo in instrucciones:
             clase = nodo['nodo']
             if clase == 'Declaracion':
@@ -94,17 +106,25 @@ class AnalizadorSemantico:
                 raise ValueError(f'Instrucción no admitida: {clase}')
 
     def analizar(self, arbol):
+        """Recibe el nodo Programa, valida sus instrucciones y devuelve la tabla global.
+        Cada llamada comienza con una tabla nueva y no ejecuta capturas ni mensajes.
+        """
         simbolos = {}
         self.bloque(arbol['instrucciones'], simbolos)
         return simbolos
 
 
 def analizar_semantica(codigo: str):
-    """Ejecuta lexer, parser y semántica; devuelve símbolos globales, sin ejecutar código."""
+    """Recibe código fuente; ejecuta lexer, parser y validación semántica.
+    Devuelve la tabla global o propaga el primer error de cualquiera de esas etapas.
+    """
     return AnalizadorSemantico().analizar(analizar(codigo))
 
 
 def main():
+    """Valida el archivo recibido por consola y, con --simbolos, muestra la tabla global.
+    Informa los errores por categoría sin ejecutar el programa.
+    """
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument('archivo', type=Path)
     cli.add_argument('--simbolos', action='store_true', help='Mostrar tabla de símbolos globales')

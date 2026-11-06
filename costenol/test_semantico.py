@@ -7,12 +7,14 @@ from parser import ErrorSintactico
 class PruebasSemanticas(unittest.TestCase):
     def test_ejemplos(self):
         # Caso independiente de los archivos que el estudiante edita al practicar.
+        """Valida un programa semántico completo independiente de los ejercicios editables."""
         analizar_semantica('edad Entero; edad=20; nombre Texto; nombre="Ana"; '
                           'b Logico; b=edad>=18; resultado Texto; '
                           'Si (b) resultado="mayor"; Sino resultado="menor"; FinSi '
                           'Mensaje.Texto(nombre); Mensaje.Texto(resultado);')
 
     def test_capturas_y_tabla(self):
+        """Verifica tipos e inicialización registrados en la tabla tras capturas y declaraciones."""
         for tipo in ['Texto', 'Entero', 'Real', 'Logico']:
             with self.subTest(tipo=tipo):
                 tabla = analizar_semantica(f'x {tipo}; x = Captura.{tipo}(); Mensaje.Texto(x);')
@@ -22,12 +24,14 @@ class PruebasSemanticas(unittest.TestCase):
         self.assertEqual(analizar_semantica(''), {})
 
     def test_declaraciones(self):
+        """Comprueba errores por nombres no declarados, repetidos o usados antes de declararse."""
         for codigo in ['x = 1;', 'Mensaje.Texto(x);', 'x Entero; x Real;',
                        'x Entero; x = y + 1;', 'x = 1; x Entero;']:
             with self.subTest(codigo=codigo), self.assertRaises(ErrorSemantico):
                 analizar_semantica(codigo)
 
     def test_asignaciones(self):
+        """Comprueba conversiones permitidas y rechaza asignaciones incompatibles."""
         analizar_semantica('x Real; x = 2; x = 3,5;')
         for codigo in ['x Entero; x = 2,5;', 'x Entero; x = 4 / 2;',
                        'x Texto; x = 2;', 'x Logico; x = 1;',
@@ -36,12 +40,22 @@ class PruebasSemanticas(unittest.TestCase):
                 analizar_semantica(codigo)
 
     def test_operaciones(self):
+        """Valida operaciones admitidas y rechaza operadores con tipos incompatibles."""
         analizar_semantica('x Real; x = -(2 + 3,5) * 4 / 2; t Texto; t = "a" + "b";')
         for expresion in ['"a" - 1', '"a" + 1', '-"a"', '(1 == 1) + 2']:
             with self.subTest(expresion=expresion), self.assertRaises(ErrorSemantico):
                 analizar_semantica(f'x Real; x = {expresion};')
 
+    def test_concatenacion_tipo_y_limites(self):
+        """Comprueba que texto con números produce Texto y que no se concatena Logico."""
+        tabla = analizar_semantica('t Texto; t="a" + 2; t=3,5 + "b";')
+        self.assertEqual(tabla['t']['tipo'], 'Texto')
+        for expresion in ['"a" + (1==1)', '(1==1) + "a"']:
+            with self.subTest(expresion=expresion), self.assertRaises(ErrorSemantico):
+                analizar_semantica(f'Mensaje.Texto({expresion});')
+
     def test_condiciones_y_comparaciones(self):
+        """Comprueba tipos de comparaciones y exige condiciones lógicas."""
         for op in ['==', '!=', '<', '>', '<=', '>=']:
             analizar_semantica(f'Si (1 {op} 2,0) FinSi')
         analizar_semantica('b Logico; b = 1 == 1; Si (b) FinSi Si ("a" != "b") FinSi')
@@ -50,6 +64,7 @@ class PruebasSemanticas(unittest.TestCase):
                 analizar_semantica(f'Si ({condicion}) FinSi')
 
     def test_inicializacion(self):
+        """Rechaza lecturas previas a una asignación y permite actualizaciones tras inicializar."""
         for codigo in ['x Entero; Mensaje.Texto(x);', 'x Entero; x = x + 1;',
                        'b Logico; Si (b) FinSi']:
             with self.subTest(codigo=codigo), self.assertRaises(ErrorSemantico):
@@ -57,6 +72,7 @@ class PruebasSemanticas(unittest.TestCase):
         analizar_semantica('x Entero; x = 1; x = x + 1;')
 
     def test_flujo_de_ramas(self):
+        """Verifica inicialización segura en ramas alternativas y condicionales anidados."""
         inicio = 'x Entero; Si (1 == 1) '
         analizar_semantica(inicio + 'x = 1; Sino x = 2; FinSi Mensaje.Texto(x);')
         analizar_semantica('x Entero; x = 0; Si (1 == 1) x = 1; FinSi Mensaje.Texto(x);')
@@ -67,6 +83,7 @@ class PruebasSemanticas(unittest.TestCase):
         analizar_semantica(inicio + 'Si (1 == 1) x = 1; Sino x = 2; FinSi Sino x = 3; FinSi Mensaje.Texto(x);')
 
     def test_alcance(self):
+        """Verifica variables locales de ramas y rechazo de declaraciones que oculten nombres visibles."""
         tabla = analizar_semantica('Si (1 == 1) x Entero; x = 1; Sino x Texto; x = "a"; FinSi')
         self.assertNotIn('x', tabla)
         for codigo in ['Si (1 == 1) x Entero; FinSi x = 1;',
@@ -75,6 +92,7 @@ class PruebasSemanticas(unittest.TestCase):
                 analizar_semantica(codigo)
 
     def test_ubicaciones_y_etapas(self):
+        """Comprueba ubicaciones semánticas y propagación de errores de etapas anteriores."""
         casos = [('x Entero;\nx = "a";', 'Línea 2, columna 1'),
                  ('x Entero;\nx = y;', 'Línea 2, columna 5'),
                  ('x Entero;\nx = "a" - 1;', 'Línea 2, columna 9'),

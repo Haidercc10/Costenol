@@ -26,12 +26,18 @@ SIMBOLOS = {
 PATRON = re.compile(r'(?P<ESPACIO>[ \t]+)|(?P<NUM_REAL>[0-9]+,[0-9]+)|(?P<NUM_ENTERO>[0-9]+)|(?P<IDENTIFICADOR>[^\W\d]\w*)')
 
 def tokenizar(codigo: str) -> list[Token]:
+    """Recibe código fuente y devuelve tokens con tipo, lexema, línea y columna.
+    Omite espacios y comentarios; lanza ErrorLexico ante caracteres inválidos o cierres ausentes.
+    """
     tokens = []
     for linea, texto in enumerate(codigo.splitlines(), 1):
         pos = 0
         while pos < len(texto):
             columna = pos + 1
             def error(mensaje):
+                """Construye un ErrorLexico con la línea y columna actuales.
+                Devuelve la excepción para que el llamador la lance con raise.
+                """
                 return ErrorLexico(f'Línea {linea}, columna {columna}: {mensaje}')
             if texto.startswith('//', pos):
                 fin = texto.find('//', pos + 2)
@@ -67,8 +73,11 @@ def tokenizar(codigo: str) -> list[Token]:
     return tokens
 
 def main():
+    """Lee la ruta recibida por consola, tokeniza el archivo UTF-8 e imprime los tokens.
+    Finaliza con un mensaje y código de error si falla la lectura o el análisis.
+    """
     if len(sys.argv) != 2:
-        sys.exit('Uso: python lexer.py ejemplo.cost')
+        sys.exit('Uso: python lexer.py ejemplo.pqek')
     try:
         tokens = tokenizar(Path(sys.argv[1]).read_text(encoding='utf-8-sig'))
     except (OSError, UnicodeError, ErrorLexico) as error:

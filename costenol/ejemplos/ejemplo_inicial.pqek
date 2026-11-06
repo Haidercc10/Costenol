@@ -1,0 +1,4 @@
+nombre Texto;
+Mensaje.Texto("¿Como te llamas?");
+nombre = Captura.Texto();
+Mensaje.Texto("Hola, " + nombre);

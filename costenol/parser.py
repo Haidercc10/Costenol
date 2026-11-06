@@ -6,6 +6,7 @@ from lexer import Token, ErrorLexico, tokenizar
 
 
 def ubicacion(token):
+    """Recibe un Token y devuelve su línea y columna para incorporarlas al AST."""
     return {"linea": token.linea, "columna": token.columna}
 
 
@@ -19,14 +20,17 @@ COMPARACIONES = {'IGUAL', 'DIFERENTE', 'MAYOR', 'MENOR', 'MAYOR_IGUAL', 'MENOR_I
 
 class Parser:
     def __init__(self, tokens: list[Token], fin_linea=1, fin_columna=1):
+        """Recibe tokens y la ubicación final del texto; añade EOF e inicia el cursor pos en cero."""
         self.tokens = list(tokens) + [Token('EOF', '', fin_linea, fin_columna)]
         self.pos = 0
 
     @property
     def actual(self):
+        """Devuelve el token situado en pos sin consumirlo; es una propiedad de consulta."""
         return self.tokens[self.pos]
 
     def error(self, esperado):
+        """Construye un ErrorSintactico con lo esperado, el token encontrado y su ubicación."""
         t = self.actual
         encontrado = 'fin del archivo' if t.tipo == 'EOF' else repr(t.valor)
         return ErrorSintactico(
@@ -35,6 +39,9 @@ class Parser:
         )
 
     def aceptar(self, *tipos):
+        """Consume y devuelve el token actual si coincide con alguno de los tipos recibidos.
+        Si no coincide, devuelve None sin mover el cursor.
+        """
         if self.actual.tipo in tipos:
             token = self.actual
             self.pos += 1
@@ -42,23 +49,33 @@ class Parser:
         return None
 
     def exigir(self, tipo, descripcion):
+        """Consume el tipo requerido y devuelve su token.
+        Si falta, lanza ErrorSintactico usando la descripción recibida.
+        """
         token = self.aceptar(tipo)
         if token is None:
             raise self.error(descripcion)
         return token
 
     def analizar(self):
+        """Reconoce todas las instrucciones hasta EOF y devuelve el nodo Programa del AST."""
         instrucciones = self.bloque(set())
         self.exigir('EOF', 'fin del archivo')
         return {'nodo': 'Programa', 'instrucciones': instrucciones}
 
     def bloque(self, cierres):
+        """Recibe los tipos que cierran un bloque y devuelve su lista de instrucciones.
+        Se detiene también ante EOF; no consume el cierre.
+        """
         instrucciones = []
         while self.actual.tipo not in cierres | {'EOF'}:
             instrucciones.append(self.instruccion())
         return instrucciones
 
     def instruccion(self):
+        """Reconoce una declaración, asignación, mensaje o condicional y devuelve su nodo.
+        Consume los tokens correspondientes y exige los delimitadores de cada instrucción.
+        """
         if self.actual.tipo == 'IDENTIFICADOR':
             nombre = self.exigir('IDENTIFICADOR', 'un identificador')
             if self.actual.tipo in TIPOS:
@@ -89,6 +106,7 @@ class Parser:
         raise self.error('una declaración, asignación, Mensaje.Texto(...) o Si (...)')
 
     def expresion(self):
+        """Construye una expresión con una comparación opcional entre expresiones aritméticas."""
         izquierda = self.suma()
         if self.actual.tipo in COMPARACIONES:
             operador = self.actual
@@ -98,10 +116,12 @@ class Parser:
 
     @staticmethod
     def binaria(operador, izquierda, derecha):
+        """Recibe operador y operandos; devuelve un nodo Binaria con ubicación y ambos subárboles."""
         return {'nodo': 'Binaria', 'operador': operador.valor, **ubicacion(operador),
                 'izquierda': izquierda, 'derecha': derecha}
 
     def suma(self):
+        """Construye sumas y restas por la izquierda, dejando mayor prioridad a producto."""
         izquierda = self.producto()
         while self.actual.tipo in {'SUMA', 'RESTA'}:
             operador = self.actual
@@ -110,6 +130,7 @@ class Parser:
         return izquierda
 
     def producto(self):
+        """Construye multiplicaciones y divisiones por la izquierda a partir de expresiones unarias."""
         izquierda = self.unaria()
         while self.actual.tipo in {'MULTIPLICACION', 'DIVISION'}:
             operador = self.actual
@@ -118,12 +139,16 @@ class Parser:
         return izquierda
 
     def unaria(self):
+        """Reconoce signos + y - recursivos; sin signo, delega en primaria."""
         operador = self.aceptar('SUMA', 'RESTA')
         if operador:
             return {'nodo': 'Unaria', 'operador': operador.valor, **ubicacion(operador), 'valor': self.unaria()}
         return self.primaria()
 
     def primaria(self):
+        """Reconoce un literal, variable, captura o expresión entre paréntesis.
+        Devuelve su nodo o lanza ErrorSintactico si no puede comenzar una expresión.
+        """
         literal = self.aceptar('NUM_ENTERO', 'NUM_REAL', 'CADENA')
         if literal:
             return {'nodo': 'Literal', 'tipo': literal.tipo, 'lexema': literal.valor, **ubicacion(literal)}
@@ -148,6 +173,7 @@ class Parser:
 
 def analizar(codigo: str):
     # EOF apunta al final real del texto, incluso si termina en comentarios o espacios.
+    """Reconoce todas las instrucciones hasta EOF y devuelve el nodo Programa del AST."""
     normalizado = codigo.replace('\r\n', '\n').replace('\r', '\n')
     linea = normalizado.count('\n') + 1
     columna = len(normalizado.rsplit('\n', 1)[-1]) + 1
@@ -155,6 +181,9 @@ def analizar(codigo: str):
 
 
 def main():
+    """Analiza el archivo indicado por consola y comunica si su estructura es válida.
+    Con --arbol muestra el AST en JSON; no ejecuta ni valida tipos.
+    """
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument('archivo', type=Path)
     cli.add_argument('--arbol', action='store_true', help='Mostrar el árbol sintáctico en JSON')

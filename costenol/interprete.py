@@ -1,4 +1,4 @@
-﻿"""Intérprete de Costeñol: valida el programa completo antes de ejecutarlo."""
+"""Intérprete de Costeñol: valida el programa completo antes de ejecutarlo."""
 import argparse
 import math
 import operator
@@ -19,6 +19,9 @@ OPERACIONES = {'+': operator.add, '-': operator.sub, '*': operator.mul,
 
 
 def mostrar(valor):
+    """Convierte un valor a su representación de salida en Costeñol.
+    Usa coma para reales y Verdadero/Falso para lógicos; devuelve una cadena.
+    """
     if isinstance(valor, bool):
         return 'Verdadero' if valor else 'Falso'
     if isinstance(valor, float):
@@ -29,18 +32,26 @@ def mostrar(valor):
 class Interprete:
     def __init__(self, entrada=input, salida=print):
         # Funciones inyectables para pruebas y para una futura interfaz.
+        """Recibe funciones de entrada y salida; por defecto usa input y print.
+        Permite conectar el mismo intérprete a la consola, las pruebas o la interfaz.
+        """
         self.entrada = entrada
         self.salida = salida
 
     def error(self, nodo, mensaje):
+        """Lanza ErrorEjecucion con línea, columna y descripción de la causa."""
         raise ErrorEjecucion(f'Línea {nodo["linea"]}, columna {nodo["columna"]}: {mensaje}')
 
     def numero_finito(self, nodo, valor):
+        """Devuelve el valor si es válido; rechaza reales infinitos o NaN con ErrorEjecucion."""
         if isinstance(valor, float) and not math.isfinite(valor):
             self.error(nodo, 'resultado numérico fuera del rango permitido')
         return valor
 
     def cadena(self, nodo):
+        """Decodifica el lexema de una cadena y devuelve su texto sin comillas.
+        Interpreta los escapes admitidos y rechaza escapes desconocidos.
+        """
         texto = nodo['lexema'][1:-1]
         escapes = {'n': '\n', 't': '\t', 'r': '\r', '"': '"', '\\': '\\'}
         resultado = []
@@ -57,6 +68,9 @@ class Interprete:
         return ''.join(resultado)
 
     def capturar(self, nodo):
+        """Solicita un dato del tipo del nodo y devuelve su valor convertido.
+        Valida formato y rango; una entrada inválida, agotada o cancelada detiene la ejecución.
+        """
         tipo = nodo['tipo']
         try:
             texto = self.entrada(f'Captura.{tipo} > ')
@@ -86,6 +100,9 @@ class Interprete:
         self.error(nodo, f'entrada inválida para {tipo}: {texto!r}; se esperaba {formato}')
 
     def evaluar(self, nodo, entorno):
+        """Evalúa recursivamente una expresión del AST usando el entorno recibido.
+        Devuelve su valor, concatena texto con números y controla errores numéricos.
+        """
         clase = nodo['nodo']
         if clase == 'Literal':
             if nodo['tipo'] == 'CADENA':
@@ -107,6 +124,8 @@ class Interprete:
             # Evaluación de izquierda a derecha, incluso si hay capturas.
             izquierda = self.evaluar(nodo['izquierda'], entorno)
             derecha = self.evaluar(nodo['derecha'], entorno)
+            if nodo['operador'] == '+' and (isinstance(izquierda, str) or isinstance(derecha, str)):
+                return mostrar(izquierda) + mostrar(derecha)
             try:
                 valor = OPERACIONES[nodo['operador']](izquierda, derecha)
             except ZeroDivisionError:
@@ -117,6 +136,9 @@ class Interprete:
         raise ValueError(f'Expresión desconocida: {clase}')
 
     def bloque(self, instrucciones, entorno):
+        """Ejecuta instrucciones en orden y modifica los valores del entorno.
+        Selecciona una sola rama de cada Si y conserva locales sus declaraciones nuevas.
+        """
         for nodo in instrucciones:
             clase = nodo['nodo']
             if clase == 'Declaracion':
@@ -140,6 +162,9 @@ class Interprete:
                 raise ValueError(f'Instrucción desconocida: {clase}')
 
     def ejecutar(self, codigo):
+        """Valida todo el código con lexer, parser y semántica antes de producir efectos.
+        Ejecuta el AST con un entorno nuevo y devuelve las variables globales y sus valores.
+        """
         arbol = analizar(codigo)
         AnalizadorSemantico().analizar(arbol)
         entorno = {}
@@ -148,10 +173,16 @@ class Interprete:
 
 
 def ejecutar(codigo, entrada=input, salida=print):
+    """Recibe código y funciones opcionales de entrada/salida; crea un intérprete y devuelve el entorno final.
+    Propaga los errores de validación o ejecución para que consola o interfaz los presenten.
+    """
     return Interprete(entrada, salida).ejecutar(codigo)
 
 
 def main():
+    """Lee el archivo indicado por consola y lo ejecuta con entrada y salida de terminal.
+    Presenta el primer error conocido con su categoría y termina con código distinto de cero.
+    """
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument('archivo', type=Path)
     args = cli.parse_args()

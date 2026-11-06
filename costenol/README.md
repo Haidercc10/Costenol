@@ -3,7 +3,7 @@
 Requiere Python 3.10 o posterior. No necesita paquetes externos.
 Abre esta carpeta en VS Code y ejecuta en su terminal:
 
-    python lexer.py ejemplo.cost
+    python lexer.py ejemplos/ejemplo.pqek
 
 Si Windows no reconoce python, usa py en su lugar.
 
@@ -44,13 +44,13 @@ validaremos declaraciones y tipos, y añadiremos ejecución básica.
 
 Ejecuta desde esta carpeta:
 
-    python parser.py ejemplo_sintactico.cost
-    python parser.py ejemplo_sintactico.cost --arbol
+    python parser.py ejemplos/ejemplo_sintactico.pqek
+    python parser.py ejemplos/ejemplo_sintactico.pqek --arbol
     python -m unittest test_parser.py -v
 
 El primer comando valida; el segundo también muestra el árbol sintáctico (AST)
 en JSON; el tercero ejecuta las pruebas automáticas. El lexer sigue disponible
-con su comando original. No se modificó ejemplo.cost para conservar tus ejercicios.
+con su comando original. No se modificó ejemplos/ejemplo.pqek para conservar tus ejercicios.
 
 ### Cómo funciona el parser
 
@@ -106,9 +106,9 @@ no se escriben en los programas Costeñol.
 
 ### Ejercicios de errores sintácticos
 
-Crea un archivo prueba_error.cost con un solo ejemplo a la vez y ejecuta:
+Crea un archivo prueba_error.pqek con un solo ejemplo a la vez y ejecuta:
 
-    python parser.py prueba_error.cost
+    python parser.py prueba_error.pqek
 
 Prueba `edad = ;` para ver la ausencia de una expresión.
 Prueba `edad Entero` para ver la ausencia del punto y coma.
@@ -129,9 +129,9 @@ sean lógicas. Después construiremos la ejecución básica. No se usa eval ni e
 
 Desde la carpeta costenol:
 
-    python semantico.py ejemplo_semantico.cost
-    python semantico.py ejemplo_semantico.cost --simbolos
-    python semantico.py error_semantico.cost
+    python semantico.py ejemplos/ejemplo_semantico.pqek
+    python semantico.py ejemplos/ejemplo_semantico.pqek --simbolos
+    python semantico.py ejemplos/error_semantico.pqek
     python -m unittest discover -p "test_*.py" -v
 
 El tercer comando falla intencionalmente con ErrorSemantico en línea 3,
@@ -197,7 +197,7 @@ calcule expresiones y seleccione las ramas de los condicionales.
 
 Desde esta carpeta ejecuta:
 
-    python interprete.py ejemplo_ejecucion.cost
+    python interprete.py ejemplos/ejemplo_ejecucion.pqek
 
 El programa primero valida TODO el código con lexer, parser y semántica.
 Solo si pasa comienza a leer datos y mostrar mensajes. Para el ejemplo escribe
@@ -243,13 +243,13 @@ La salida de un real puede usar notación científica para valores extremos.
 
 ### Probar errores de ejecución
 
-Crea prueba_ejecucion.cost con:
+Crea prueba_ejecucion.pqek con:
 
     divisor Entero;
     divisor = Captura.Entero();
     Mensaje.Texto(10 / divisor);
 
-Ejecuta `python interprete.py prueba_ejecucion.cost` e introduce 0: informará
+Ejecuta `python interprete.py prueba_ejecucion.pqek` e introduce 0: informará
 ErrorEjecucion, línea 3, columna 22, división entre cero. Si introduces letras,
 el error corresponde a la captura de la línea 2. Las salidas ya producidas
 antes de un error de ejecución se conservan; no se revierte el programa.
@@ -280,7 +280,7 @@ componente Tcl/Tk. `python -m tkinter` permite comprobar que abre una ventana.
 
 ### Uso
 
-- Nuevo, Abrir, Guardar y Guardar como trabajan con archivos .cost en UTF-8.
+- Nuevo, Abrir, Guardar y Guardar como trabajan con archivos .pqek en UTF-8.
 - Al reemplazar o cerrar un documento modificado se pregunta si deseas guardarlo.
 - F5 / Analizar valida léxico, sintaxis y semántica sin ejecutar capturas.
 - F6 / Ejecutar valida primero y ejecuta el contenido actual del editor,
@@ -293,7 +293,7 @@ componente Tcl/Tk. `python -m tkinter` permite comprobar que abre una ventana.
 - Ctrl+N crea un documento, Ctrl+O abre y Ctrl+S guarda.
 - Tab inserta cuatro espacios. Hay números de línea y barras de desplazamiento.
 
-Prueba abriendo ejemplo_ejecucion.cost, pulsa F5 y luego F6. Introduce Ana,
+Prueba abriendo ejemplos/ejemplo_ejecucion.pqek, pulsa F5 y luego F6. Introduce Ana,
 20, 12,5 y Verdadero. Para probar un error, escribe `edad Entero; edad="Hola";`
 y pulsa F5. Para un error de ejecución usa `Mensaje.Texto(1/0);` y pulsa F6.
 
@@ -311,3 +311,74 @@ errores, resaltado, capturas, cancelación y archivos. Requieren Tcl/Tk funciona
 si no está disponible, aparecen como omitidas (skipped), no como verificadas.
 En el entorno de desarrollo no se pudo iniciar Tcl/Tk, por lo que la comprobación
 visual de la ventana queda pendiente en la instalación local.
+
+
+## Actualizaci?n: concatenaci?n y extensi?n .pqek
+
+La extensi?n predeterminada es ahora .pqek. La interfaz abre .pqek, .cost
+mediante el filtro de archivos anteriores y otros textos con Todos los archivos.
+Guardar como propone .pqek; Guardar conserva la ruta del documento ya abierto.
+Se crearon copias .pqek de los programas .cost existentes sin borrar originales.
+Los analizadores de consola leen texto y funcionan con ambas extensiones.
+
+    python interprete.py ejemplos/ejemplo_ejecucion.pqek
+
+El operador + admite Texto + Entero, Entero + Texto, Texto + Real y Real + Texto,
+adem?s de Texto + Texto. Usa el formato de salida del lenguaje, con coma decimal.
+No se agreg? concatenaci?n con Logico. Las operaciones entre n?meros siguen
+siendo aritm?ticas; no cambi? la conversi?n de una asignaci?n directa a Texto.
+
+    Mensaje.Texto("El resultado de la operaci?n es: " + res);
+
+La concatenaci?n se puede asignar a una variable Texto y no solo usar en mensajes.
+Los operadores + se agrupan por la izquierda: "Total: " + 2 + 3 produce
+"Total: 23". Para sumar primero usa "Total: " + (2 + 3), que produce "Total: 5".
+La gu?a PDF anterior refleja las reglas previas a esta actualizaci?n.
+
+## Tema oscuro
+
+La interfaz usa una paleta oscura uniforme en editor, resultados, botones,
+números de línea, barras, capturas, confirmaciones y selector de archivos.
+La configuración se encuentra en tema.py; las funciones nuevas incluyen docstrings.
+Los botones Analizar y Ejecutar tienen acento azul; errores en rosa y éxitos en verde.
+
+Abre con `python interfaz.py`. Reinicia una ventana ya abierta para aplicar el cambio.
+El selector oscuro inicia en ejemplos o en la carpeta del documento actual.
+Muestra carpetas a la izquierda y archivos a la derecha. Puedes cambiar el filtro
+superior por *.pqek, *.cost o * y pulsar Aplicar filtro. Al guardar, si no escribes
+extensión se añade .pqek; reemplazar un archivo requiere confirmación.
+La barra de título solicita el modo oscuro de Windows cuando es compatible.
+Las decoraciones externas dependen del sistema operativo.
+
+Validación del cambio: módulos compilados y 27 pruebas de lógica correctas.
+Las tres pruebas gráficas requieren Tcl/Tk funcional; su comprobación visual
+sigue pendiente en este entorno.
+
+## Selector de tema claro y oscuro
+
+La cabecera incluye un selector Tema con las opciones Oscuro y Claro.
+El cambio es inmediato y conserva el código, resultados y cambios sin guardar.
+También afecta a las capturas, confirmaciones y selectores de archivos que se
+abran después. El tema inicial sigue siendo Oscuro; no se guarda la preferencia
+entre sesiones. La barra de título depende del soporte del sistema operativo.
+Las paletas se definen en PALETAS dentro de tema.py. cambiar_tema en interfaz.py
+actualiza los widgets existentes sin reconstruir el documento.
+
+## Logo de la aplicación
+
+La cabecera y el icono de ventana usan logo/image.png. La función cargar_logo
+conserva la proporción y reduce la imagen al mostrarla, sin alterar el original.
+La ruta se resuelve desde interfaz.py para funcionar desde cualquier carpeta.
+Si no se puede leer el logo, se muestra el nombre Costeñol como alternativa.
+La imagen conserva su fondo original tanto en tema claro como oscuro.
+
+## Logos según el tema
+
+La cabecera utiliza Logo costeñol con fondo transparente.png para el tema Claro,
+y Logo costeñol blanco sobre fondo transparente.png para el tema Oscuro.
+Cambiar de tema actualiza el logo inmediatamente, conservando sus proporciones.
+El icono de ventana y los nuevos diálogos usan únicamente el isotipo
+Puente, sol y ondas_ isotipo costero.png, sin letras y sin cambiar con el tema.
+Los recursos originales se conservan en logo/. cargar_logo carga las variantes;
+actualizar_logo selecciona la apropiada. Si falta una variante, se muestra el
+nombre Costeñol como alternativa para ese tema.

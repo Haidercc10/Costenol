@@ -3,6 +3,7 @@ from pathlib import Path
 import sys
 import tkinter as tk
 from tkinter import ttk, filedialog
+from capturas import convertir_captura, permite_edicion, FORMATOS
 
 OSCURO = {'fondo': '#0d1117', 'panel': '#161b22', 'elevado': '#212936',
            'texto': '#e6edf3', 'suave': '#9daabc', 'borde': '#303b4b',
@@ -80,8 +81,9 @@ def aplicar_tema(root, nombre='Oscuro'):
     barra_oscura(root)
 
 
-def dialogo(parent, titulo, mensaje, opciones, entrada=False):
-    """Muestra un diálogo modal oscuro; devuelve el valor elegido o None al cancelar.\n    En modo entrada devuelve texto, incluida la cadena vacía, al aceptar.
+def dialogo(parent, titulo, mensaje, opciones, entrada=False, tipo_captura=None):
+    """Muestra un diálogo modal oscuro; devuelve el valor elegido o None al cancelar.\n    En modo entrada valida tipo_captura y devuelve el texto aceptado.
+    Un dato inválido mantiene abierto el diálogo; Cancelar devuelve None.
     """
     ventana = tk.Toplevel(parent)
     ventana.withdraw()
@@ -95,15 +97,39 @@ def dialogo(parent, titulo, mensaje, opciones, entrada=False):
     ttk.Label(marco, text=titulo, style='Titulo.TLabel').pack(anchor='w', pady=(0, 12))
     ttk.Label(marco, text=mensaje, wraplength=460, justify='left').pack(anchor='w', pady=(0, 18))
     campo = None
+    error_entrada = tk.StringVar(value='')
     if entrada:
-        campo = ttk.Entry(marco, width=48)
-        campo.pack(fill='x', pady=(0, 18))
+        if tipo_captura == 'Logico':
+            campo = ttk.Combobox(marco, values=('Verdadero', 'Falso'), state='readonly', width=45)
+        else:
+            campo = ttk.Entry(marco, width=48)
+        campo.pack(fill='x', pady=(0, 8))
+        ttk.Label(marco, textvariable=error_entrada, foreground=COLORES['error'],
+                  wraplength=460).pack(anchor='w', pady=(0, 12))
+        if tipo_captura and tipo_captura != 'Logico':
+            def validar_edicion(propuesto):
+                """Bloquea caracteres o pegados incompatibles, sin impedir estados parciales."""
+                valido = permite_edicion(tipo_captura, propuesto)
+                error_entrada.set('' if valido else 'Se esperaba ' + FORMATOS[tipo_captura])
+                return valido
+            campo.configure(validate='key', validatecommand=(ventana.register(validar_edicion), '%P'))
     botones = ttk.Frame(marco)
     botones.pack(fill='x')
 
     def elegir(valor):
-        """Guarda la opción o entrada elegida y cierra el diálogo modal."""
-        resultado[0] = campo.get() if entrada and valor is True else valor
+        """Valida el dato completo antes de cerrar; los errores mantienen abierto el diálogo."""
+        if entrada and valor is True:
+            texto = campo.get()
+            if tipo_captura:
+                try:
+                    convertir_captura(tipo_captura, texto)
+                except ValueError as error:
+                    error_entrada.set(str(error))
+                    campo.focus_set()
+                    return
+            resultado[0] = texto
+        else:
+            resultado[0] = valor
         ventana.destroy()
 
     for texto, valor in opciones:

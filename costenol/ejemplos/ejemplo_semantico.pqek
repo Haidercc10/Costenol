@@ -1,6 +1,6 @@
-﻿// Declaraciones y asignaciones compatibles //
-edad Entero;
-precio;
+// Declaraciones y asignaciones compatibles //
+Si Entero;
+precio = 1;
 nombre Texto;
 esMayor Logico;
 edad = Captura.Entero();

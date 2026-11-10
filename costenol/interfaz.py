@@ -4,6 +4,7 @@ import re
 import tkinter as tk
 from tkinter import ttk
 from tema import aplicar_tema, COLORES, dialogo, avisar, seleccionar_archivo
+from capturas import FORMATOS
 from lexer import ErrorLexico
 from parser import ErrorSintactico
 from semantico import analizar_semantica, ErrorSemantico
@@ -74,7 +75,9 @@ class Aplicacion:
         horizontal = ttk.Scrollbar(zona, orient='horizontal', command=self.editor.xview)
         horizontal.pack(fill='x')
         self.editor.configure(xscrollcommand=horizontal.set)
-        self.editor.tag_configure('error', background='#542c39', foreground='#ffe4e7')
+        self.configurar_resaltado()
+        for evento in ('<KeyRelease>', '<ButtonRelease-1>', '<B1-Motion>', '<FocusIn>'):
+            self.editor.bind(evento, self.resaltar_linea_actual, add='+')
         self.editor.bind('<<Modified>>', self.modificado)
         self.editor.bind('<Configure>', lambda e: self.dibujar_numeros())
         self.editor.bind('<Tab>', self.tabular)
@@ -158,11 +161,42 @@ class Aplicacion:
         self.salida.configure(bg=c['panel'], fg=c['texto'],
                               selectbackground=c['seleccion'], selectforeground=c['texto'])
         oscuro = self.tema.get() == 'Oscuro'
-        self.editor.tag_configure('error', background='#542c39' if oscuro else '#ffe1e5',
-                                  foreground='#ffe4e7' if oscuro else '#8c1326')
+        self.configurar_resaltado()
         self.salida.tag_configure('error', foreground=c['error'])
         self.salida.tag_configure('ok', foreground=c['ok'])
         self.dibujar_numeros()
+
+    def configurar_resaltado(self):
+        """Define colores y prioridad de línea activa, error y selección para el tema actual.
+        La selección siempre queda por encima del sombreado para distinguir el texto seleccionado.
+        """
+        oscuro = self.tema.get() == 'Oscuro'
+        self.editor.tag_configure('linea_actual', background='#202d3e' if oscuro else '#e7effa')
+        self.editor.tag_configure('error', background='#542c39' if oscuro else '#ffe1e5',
+                                  foreground='#ffe4e7' if oscuro else '#8c1326')
+        self.editor.tag_configure('error_actual', background='#734152' if oscuro else '#f8c2ce',
+                                  foreground='#fff0f3' if oscuro else '#761426')
+        self.editor.tag_configure('sel', background='#4877b0' if oscuro else '#9ac4f5',
+                                  foreground='#ffffff' if oscuro else '#102b4b')
+        self.editor.configure(inactiveselectbackground='#395a80' if oscuro else '#bad3ef',
+                              exportselection=False)
+        self.editor.tag_lower('linea_actual')
+        self.editor.tag_raise('error')
+        self.editor.tag_raise('error_actual')
+        self.editor.tag_raise('sel')
+        self.resaltar_linea_actual()
+
+    def resaltar_linea_actual(self, evento=None):
+        """Sombrea la línea del cursor y acentúa su error sin borrar selección ni modificar código."""
+        self.editor.tag_remove('linea_actual', '1.0', 'end')
+        self.editor.tag_remove('error_actual', '1.0', 'end')
+        inicio = self.editor.index('insert linestart')
+        fin = self.editor.index('insert lineend+1c')
+        self.editor.tag_add('linea_actual', inicio, fin)
+        # Un error puede señalar una columna al final de la línea: se compara toda la línea.
+        if self.editor.tag_nextrange('error', inicio, fin):
+            self.editor.tag_add('error_actual', inicio, fin)
+        self.editor.tag_raise('sel')
 
     def atajo(self, funcion):
         """Ejecuta la acción recibida si la aplicación está libre.
@@ -201,6 +235,7 @@ class Aplicacion:
         """
         self.titulo()
         self.editor.tag_remove('error', '1.0', 'end')
+        self.resaltar_linea_actual()
         self.dibujar_numeros()
         if self.editor.edit_modified():
             self.estado.set('Código modificado · Analiza nuevamente con F5')
@@ -221,6 +256,7 @@ class Aplicacion:
         self.titulo()
         self.limpiar()
         self.editor.focus_set()
+        self.resaltar_linea_actual()
 
     def confirmar_cambios(self):
         """Pregunta si deben guardarse los cambios pendientes.
@@ -321,15 +357,17 @@ class Aplicacion:
             self.editor.tag_add('error', f'{linea}.0', f'{linea}.end+1c')
             self.editor.mark_set('insert', f'{linea}.{columna - 1}')
             self.editor.see('insert')
+            self.resaltar_linea_actual()
 
     def capturar(self, prompt):
         """Solicita un dato mediante un diálogo y registra la entrada en Resultados.
         Devuelve el texto o None al cancelar, para que el intérprete gestione la cancelación.
         """
         self.imprimir(prompt)
-        ayuda = 'Real: usa coma decimal. Logico: Verdadero o Falso.'
+        tipo = prompt.split('.', 1)[1].split()[0]
+        ayuda = 'Formato: ' + FORMATOS[tipo]
         valor = dialogo(self.root, 'Entrada de datos', f'{prompt}\n\n{ayuda}',
-                        [('Aceptar', True), ('Cancelar', None)], entrada=True)
+                        [('Aceptar', True), ('Cancelar', None)], entrada=True, tipo_captura=tipo)
         self.imprimir('> ' + valor if valor is not None else '> Captura cancelada')
         return valor
 
@@ -343,6 +381,7 @@ class Aplicacion:
         self.ocupada = True
         self.limpiar()
         self.editor.tag_remove('error', '1.0', 'end')
+        self.resaltar_linea_actual()
         self.editor.configure(state='disabled')
         for boton in self.botones:
             boton.configure(state='disabled')

@@ -4,6 +4,7 @@ import math
 import operator
 import re
 from pathlib import Path
+from capturas import convertir_captura
 from lexer import ErrorLexico
 from parser import analizar, ErrorSintactico
 from semantico import AnalizadorSemantico, ErrorSemantico
@@ -80,24 +81,11 @@ class Interprete:
             self.error(nodo, 'captura cancelada')
         if texto is None:
             self.error(nodo, 'captura cancelada')
-        if tipo == 'Texto':
-            return texto
-        limpio = texto.strip()
         try:
-            if tipo == 'Entero' and re.fullmatch(r'[+-]?[0-9]+', limpio):
-                return int(limpio)
-            if tipo == 'Real' and re.fullmatch(r'[+-]?[0-9]+(?:,[0-9]+)?', limpio):
-                return self.numero_finito(nodo, float(limpio.replace(',', '.')))
-            if tipo == 'Logico' and limpio.lower() in {'verdadero', 'falso'}:
-                return limpio.lower() == 'verdadero'
-        except (ValueError, OverflowError) as error:
-            if isinstance(error, ErrorEjecucion):
-                raise
-            self.error(nodo, f'entrada fuera de rango para {tipo}')
-        formato = {'Entero': 'un entero, por ejemplo -12',
-                   'Real': 'un real con coma decimal, por ejemplo 3,5',
-                   'Logico': 'Verdadero o Falso'}[tipo]
-        self.error(nodo, f'entrada inválida para {tipo}: {texto!r}; se esperaba {formato}')
+            return convertir_captura(tipo, texto)
+        except ValueError as error:
+            self.error(nodo, str(error))
+
 
     def evaluar(self, nodo, entorno):
         """Evalúa recursivamente una expresión del AST usando el entorno recibido.

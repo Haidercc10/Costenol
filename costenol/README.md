@@ -382,3 +382,41 @@ Puente, sol y ondas_ isotipo costero.png, sin letras y sin cambiar con el tema.
 Los recursos originales se conservan en logo/. cargar_logo carga las variantes;
 actualizar_logo selecciona la apropiada. Si falta una variante, se muestra el
 nombre Costeñol como alternativa para ese tema.
+
+## Validación estricta de nombres y capturas
+
+No se permite declarar variables cuyo nombre coincida con una palabra reservada,
+sin distinguir mayúsculas: entero Entero;, texto Texto; y ENTERO Entero; fallan.
+Los nombres entero1 y textoUsuario sí están permitidos. La escritura de comandos
+sigue distinguiendo mayúsculas: se escribe Captura.Texto(), no captura.Texto().
+Las formas exactas de una reservada ya se rechazan por sintaxis; sus variantes
+que parecen identificadores se rechazan en semántica con ubicación.
+
+capturas.py centraliza los formatos para consola e interfaz:
+- Texto: solo letras Unicode y espacios, con al menos una letra; no acepta números,
+  signos, símbolos ni una entrada vacía. Esto reemplaza la regla anterior que
+  permitía cualquier texto o vacío en Captura.Texto(). Las cadenas literales del
+  código y la concatenación conservan sus reglas: "Total: " + res sigue siendo válido.
+- Entero: dígitos y un signo opcional al principio.
+- Real: dígitos, signo opcional y coma decimal opcional.
+- Logico: selección Verdadero o Falso; en consola no distingue mayúsculas.
+
+La interfaz bloquea caracteres incompatibles y pegados mediante validación de
+edición. Permite borrar y escribir estados parciales como - o 3,, pero no
+aceptarlos como dato terminado. Al pulsar Aceptar o Enter se valida el formato
+completo; si falla muestra la causa dentro del diálogo y permite corregir.
+Cancelar conserva la posibilidad de detener la ejecución. En consola, una
+entrada inválida produce ErrorEjecucion con ubicación, como antes.
+
+convertir_captura valida y convierte; permite_edicion valida estados parciales.
+Las funciones nuevas están documentadas. Los PDF previos reflejan las reglas
+anteriores de captura de Texto y no se han regenerado en esta actualización.
+
+## Sombreado de línea y selección
+
+La línea del cursor tiene un sombreado suave. Si contiene un error, su resaltado
+se intensifica al posicionar el cursor en ella. La selección de texto tiene
+prioridad sobre ambos fondos y permanece visible al cambiar de foco.
+Se actualiza con teclado, clic y arrastre, tanto en tema claro como oscuro.
+configurar_resaltado define colores y prioridades; resaltar_linea_actual mueve
+las etiquetas sin modificar el código ni la selección del usuario.

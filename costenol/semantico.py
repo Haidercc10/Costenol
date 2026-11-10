@@ -2,7 +2,7 @@
 import argparse
 import json
 from pathlib import Path
-from lexer import ErrorLexico
+from lexer import ErrorLexico, PALABRAS
 from parser import analizar, ErrorSintactico
 
 
@@ -11,6 +11,7 @@ class ErrorSemantico(ValueError):
 
 
 NUMERICOS = {'Entero', 'Real'}
+RESERVADAS = {palabra.casefold() for palabra in PALABRAS}
 
 
 class AnalizadorSemantico:
@@ -78,6 +79,8 @@ class AnalizadorSemantico:
             clase = nodo['nodo']
             if clase == 'Declaracion':
                 nombre = nodo['nombre']
+                if nombre.casefold() in RESERVADAS:
+                    self.error(nodo, f"el nombre '{nombre}' coincide con una palabra reservada")
                 if nombre in simbolos:
                     self.error(nodo, f"variable '{nombre}' ya declarada")
                 simbolos[nombre] = {'tipo': nodo['tipo'], 'inicializada': False,

@@ -1,0 +1,3 @@
+// Error lexico: faltan comillas finales //
+nombre Texto;
+nombre = "Ana;

@@ -1,4 +1,5 @@
 """Intérprete de Costeñol: valida el programa completo antes de ejecutarlo."""
+from mensajes import personalizar
 import argparse
 import math
 import operator
@@ -41,7 +42,7 @@ class Interprete:
 
     def error(self, nodo, mensaje):
         """Lanza ErrorEjecucion con línea, columna y descripción de la causa."""
-        raise ErrorEjecucion(f'Línea {nodo["linea"]}, columna {nodo["columna"]}: {mensaje}')
+        raise ErrorEjecucion(f'Línea {nodo["linea"]}, columna {nodo["columna"]}: {personalizar(mensaje)}')
 
     def numero_finito(self, nodo, valor):
         """Devuelve el valor si es válido; rechaza reales infinitos o NaN con ErrorEjecucion."""

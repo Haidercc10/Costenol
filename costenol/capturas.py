@@ -1,4 +1,5 @@
-﻿"""Reglas compartidas de captura para consola y diálogos de Costeñol."""
+"""Reglas compartidas de captura para consola y diálogos de Costeñol."""
+from mensajes import personalizar
 import math
 import re
 
@@ -26,17 +27,17 @@ def convertir_captura(tipo, texto):
             try:
                 return int(limpio)
             except ValueError:
-                raise ValueError('entrada fuera de rango para Entero') from None
+                raise ValueError(personalizar('entrada fuera de rango para Entero')) from None
     elif tipo == 'Real':
         if re.fullmatch(r'[+-]?[0-9]+(?:,[0-9]+)?', limpio):
             valor = float(limpio.replace(',', '.'))
             if not math.isfinite(valor):
-                raise ValueError('entrada fuera del rango permitido para Real')
+                raise ValueError(personalizar('entrada fuera del rango permitido para Real'))
             return valor
     elif tipo == 'Logico':
         if limpio.casefold() in {'verdadero', 'falso'}:
             return limpio.casefold() == 'verdadero'
-    raise ValueError(f'entrada inválida para {tipo}: {texto!r}; se esperaba {FORMATOS[tipo]}')
+    raise ValueError(personalizar(f'entrada inválida para {tipo}: {texto!r}; se esperaba {FORMATOS[tipo]}'))
 
 
 def permite_edicion(tipo, texto):

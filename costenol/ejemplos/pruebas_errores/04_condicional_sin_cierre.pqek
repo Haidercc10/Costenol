@@ -1,0 +1,5 @@
+// Error sintactico: falta FinSi del bloque exterior //
+Si (1 == 1)
+    Si (2 > 1)
+        Mensaje.Texto("Hola");
+    FinSi

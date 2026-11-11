@@ -101,7 +101,7 @@ class PruebasEjecucion(unittest.TestCase):
 
     def test_ejemplo_completo_y_reutilizacion(self):
         """Ejecuta el ejemplo .pqek con distintas entradas y comprueba resultados y ramas."""
-        codigo = (Path(__file__).parent / 'ejemplos' / 'ejemplo_ejecucion.pqek').read_text(encoding='utf-8-sig')
+        codigo = (Path(__file__).parent.parent / 'ejemplos' / 'ejemplo_ejecucion.pqek').read_text(encoding='utf-8-sig')
         salida, entorno = self.correr(codigo, ['Ana', '20', '12,5', 'Verdadero'])
         self.assertIn('Mayor de edad', salida)
         self.assertIn('Asistencia confirmada', salida)
@@ -113,5 +113,6 @@ class PruebasEjecucion(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
 

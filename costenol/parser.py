@@ -1,4 +1,5 @@
 """Parser descendente recursivo para Costeñol. No ejecuta el programa."""
+from mensajes import personalizar
 import argparse
 import json
 from pathlib import Path
@@ -33,10 +34,10 @@ class Parser:
         """Construye un ErrorSintactico con lo esperado, el token encontrado y su ubicación."""
         t = self.actual
         encontrado = 'fin del archivo' if t.tipo == 'EOF' else repr(t.valor)
-        return ErrorSintactico(
+        return ErrorSintactico(personalizar(
             f'Línea {t.linea}, columna {t.columna}: se esperaba {esperado}; '
             f'se encontró {encontrado}.'
-        )
+        ))
 
     def aceptar(self, *tipos):
         """Consume y devuelve el token actual si coincide con alguno de los tipos recibidos.

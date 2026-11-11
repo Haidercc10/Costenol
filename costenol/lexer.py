@@ -1,4 +1,5 @@
 """Analizador léxico manual de Costeñol. Python 3.10+."""
+from mensajes import personalizar
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -38,7 +39,7 @@ def tokenizar(codigo: str) -> list[Token]:
                 """Construye un ErrorLexico con la línea y columna actuales.
                 Devuelve la excepción para que el llamador la lance con raise.
                 """
-                return ErrorLexico(f'Línea {linea}, columna {columna}: {mensaje}')
+                return ErrorLexico(f'Línea {linea}, columna {columna}: {personalizar(mensaje)}')
             if texto.startswith('//', pos):
                 fin = texto.find('//', pos + 2)
                 if fin == -1:

@@ -1,0 +1,8 @@
+// Error semantico: puede quedar sin valor al salir del Si //
+edad Entero;
+res Entero;
+edad = Captura.Entero();
+Si (edad >= 18)
+    res = 1;
+FinSi
+Mensaje.Texto(res);

@@ -1,4 +1,5 @@
 """Validación estática de declaraciones, tipos e inicialización de Costeñol."""
+from mensajes import personalizar
 import argparse
 import json
 from pathlib import Path
@@ -17,7 +18,7 @@ RESERVADAS = {palabra.casefold() for palabra in PALABRAS}
 class AnalizadorSemantico:
     def error(self, nodo, mensaje):
         """Lanza ErrorSemantico con la ubicación del nodo y la causa recibida."""
-        raise ErrorSemantico(f'Línea {nodo["linea"]}, columna {nodo["columna"]}: {mensaje}')
+        raise ErrorSemantico(f'Línea {nodo["linea"]}, columna {nodo["columna"]}: {personalizar(mensaje)}')
 
     def buscar(self, nodo, simbolos):
         """Busca el nombre del nodo en la tabla visible y devuelve su registro.

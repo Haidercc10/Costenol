@@ -420,3 +420,18 @@ prioridad sobre ambos fondos y permanece visible al cambiar de foco.
 Se actualiza con teclado, clic y arrastre, tanto en tema claro como oscuro.
 configurar_resaltado define colores y prioridades; resaltar_linea_actual mueve
 las etiquetas sin modificar el código ni la selección del usuario.
+
+## Diagnósticos con identidad costeña
+
+mensajes.py añade una orientación costeña a los errores léxicos, sintácticos,
+semánticos, de ejecución y a las capturas inválidas. Conserva la descripción
+técnica y la ubicación; la interfaz y la consola reutilizan el mismo mensaje.
+Usa expresiones como Eche, Hey, Ajá, bro, compae, vale, Bájale dos y Deja el viaje,
+con una indicación concreta para corregir el problema y sin insultos personales.
+La selección depende de la causa, sin aleatoriedad. Los errores propagados no
+repiten la frase. Las excepciones y reglas de validación siguen siendo las mismas.
+Las funciones nuevas están documentadas.
+
+Desde costenol, ejecuta las pruebas organizadas en tests con:
+
+    python -m unittest discover -s tests -p "test_*.py" -v

@@ -435,3 +435,23 @@ Las funciones nuevas están documentadas.
 Desde costenol, ejecuta las pruebas organizadas en tests con:
 
     python -m unittest discover -s tests -p "test_*.py" -v
+
+## Diagnóstico automático mientras escribes
+
+La interfaz analiza el contenido 700 ms después de la última edición. Detecta
+escritura, pegado, borrado, deshacer y rehacer, incluso con cambios sin guardar.
+Muestra el primer error léxico, sintáctico o semántico con ubicación y mensaje
+costeño debajo del editor. Marca la línea sin desplazar ni mover el cursor,
+y conserva la selección. Cuando el código es válido o vacío, no muestra nada
+en esa zona; tampoco agrega mensajes de éxito automáticos a Resultados.
+
+No ejecuta capturas, cálculos ni instrucciones: los errores de ejecución siguen
+requiriendo F6. Las instrucciones aún incompletas pueden dar errores temporales.
+F5 y F6 conservan su comportamiento manual y sus mensajes en Resultados.
+La revisión automática no borra esos resultados. Se cancelan tareas pendientes
+al abrir otro documento, cerrar o iniciar un análisis/ejecución manual.
+
+revision.py contiene RevisionAutomatica (temporización y validación estática)
+y EditorObservable (notificación de cambios sin alterar la marca de guardado).
+Las funciones nuevas incluyen docstrings. El procesamiento sigue siendo síncrono
+y está pensado para ejercicios cortos; no es un analizador incremental por tokens.

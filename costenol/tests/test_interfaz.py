@@ -20,6 +20,7 @@ class PruebasInterfaz(unittest.TestCase):
 
     def tearDown(self):
         """Destruye la ventana de la prueba para liberar los recursos gráficos."""
+        self.app.revision.detener()
         self.root.destroy()
 
     def cargar(self, codigo):
@@ -76,6 +77,35 @@ class PruebasInterfaz(unittest.TestCase):
             self.assertEqual(self.app.codigo(), codigo)
             self.assertEqual(self.salida(), salida)
             self.assertTrue(self.app.editor.edit_modified())
+
+    def test_revision_no_mueve_cursor_ni_borra_resultados(self):
+        """Comprueba diagnóstico visible, corrección silenciosa y respeto al texto seleccionado."""
+        self.cargar('x=;')
+        self.app.imprimir('Salida conservada')
+        self.app.editor.mark_set('insert', '1.1')
+        self.app.editor.tag_add('sel', '1.0', '1.1')
+        from parser import ErrorSintactico
+        self.app.publicar_diagnostico(ErrorSintactico('Línea 1, columna 3: falta expresión'))
+        self.assertIn('Error sintáctico', self.app.diagnostico.get())
+        self.assertTrue(self.app.editor.tag_ranges('error'))
+        self.assertEqual(self.app.editor.index('insert'), '1.1')
+        self.assertTrue(self.app.editor.tag_ranges('sel'))
+        self.assertIn('Salida conservada', self.salida())
+        self.app.publicar_diagnostico(None)
+        self.assertEqual(self.app.diagnostico.get(), '')
+        self.assertFalse(self.app.editor.tag_ranges('error'))
+        self.assertFalse(self.app.panel_diagnostico.winfo_manager())
+
+    def test_notifica_ediciones_sin_guardar(self):
+        """Comprueba que varias ediciones sin guardar siguen reiniciando la revisión."""
+        self.cargar('x Entero;')
+        self.app.editor.insert('end', '\nx =')
+        self.root.update()
+        version = self.app.revision.version
+        self.app.editor.insert('end', ' 2;')
+        self.root.update()
+        self.assertGreater(self.app.revision.version, version)
+        self.assertTrue(self.app.editor.edit_modified())
 
     def test_archivos_y_cambios(self):
         """Verifica guardado, apertura, cambios pendientes y cancelación usando archivos temporales."""

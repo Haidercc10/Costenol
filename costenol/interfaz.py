@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 from tema import aplicar_tema, COLORES, dialogo, avisar, seleccionar_archivo
 from capturas import FORMATOS
+from revision import RevisionAutomatica, EditorObservable
 from lexer import ErrorLexico
 from parser import ErrorSintactico
 from semantico import analizar_semantica, ErrorSemantico
@@ -24,6 +25,9 @@ class Aplicacion:
         self.root = root
         self.archivo = None
         self.ocupada = False
+        self.ultimo_codigo = None
+        self.diagnostico = tk.StringVar(value='')
+        self.revision = RevisionAutomatica(root.after, root.after_cancel, self.publicar_diagnostico)
         root.title('Costeñol — Editor')
         root.geometry('1050x760')
         root.minsize(920, 560)
@@ -60,7 +64,7 @@ class Aplicacion:
         marco.pack(fill='both', expand=True)
         self.numeros = tk.Canvas(marco, width=52, bg=COLORES['panel'], highlightthickness=0)
         self.numeros.pack(side='left', fill='y')
-        self.editor = tk.Text(marco, wrap='none', undo=True, font=('Consolas', 12),
+        self.editor = EditorObservable(marco, wrap='none', undo=True, font=('Consolas', 12),
                               bg=COLORES['panel'], fg=COLORES['texto'], insertbackground=COLORES['acento'],
                               relief='flat', highlightthickness=1, highlightbackground=COLORES['borde'], highlightcolor=COLORES['acento'],
                               selectbackground=COLORES['seleccion'], selectforeground=COLORES['texto'], padx=10, pady=8, tabstyle='wordprocessor')
@@ -75,10 +79,15 @@ class Aplicacion:
         horizontal = ttk.Scrollbar(zona, orient='horizontal', command=self.editor.xview)
         horizontal.pack(fill='x')
         self.editor.configure(xscrollcommand=horizontal.set)
+        self.panel_diagnostico = ttk.Label(zona, textvariable=self.diagnostico,
+                                           foreground=COLORES['error'], wraplength=850,
+                                           justify='left', padding=(10, 8))
+
         self.configurar_resaltado()
         for evento in ('<KeyRelease>', '<ButtonRelease-1>', '<B1-Motion>', '<FocusIn>'):
             self.editor.bind(evento, self.resaltar_linea_actual, add='+')
         self.editor.bind('<<Modified>>', self.modificado)
+        self.editor.bind('<<ContenidoCambiado>>', self.modificado)
         self.editor.bind('<Configure>', lambda e: self.dibujar_numeros())
         self.editor.bind('<Tab>', self.tabular)
         salida = ttk.Frame(paneles)
@@ -162,6 +171,7 @@ class Aplicacion:
                               selectbackground=c['seleccion'], selectforeground=c['texto'])
         oscuro = self.tema.get() == 'Oscuro'
         self.configurar_resaltado()
+        self.panel_diagnostico.configure(foreground=c['error'])
         self.salida.tag_configure('error', foreground=c['error'])
         self.salida.tag_configure('ok', foreground=c['ok'])
         self.dibujar_numeros()
@@ -230,15 +240,35 @@ class Aplicacion:
         self.root.title(f'{marca}{self.archivo.name if self.archivo else "Sin título"} — Costeñol')
 
     def modificado(self, evento=None):
-        """Atiende cambios del editor: actualiza título, números y estado, y retira el error anterior.
-        El parámetro evento lo entrega Tkinter y es opcional para llamadas directas.
+        """Detecta cambios reales, conserva la marca de guardado y programa la revisión automática.
+        Ignora eventos de selección, guardado y notificaciones duplicadas del mismo contenido.
         """
         self.titulo()
-        self.editor.tag_remove('error', '1.0', 'end')
-        self.resaltar_linea_actual()
+        codigo = self.codigo()
+        if codigo == self.ultimo_codigo:
+            return
+        self.ultimo_codigo = codigo
         self.dibujar_numeros()
-        if self.editor.edit_modified():
-            self.estado.set('Código modificado · Analiza nuevamente con F5')
+        self.publicar_diagnostico(None)
+        if not self.ocupada:
+            self.revision.solicitar(codigo)
+
+    def publicar_diagnostico(self, error):
+        """Muestra únicamente errores actuales sin mover el cursor ni tocar la salida del programa.
+        Con None vacía y oculta el diagnóstico, conservando el sombreado de la línea activa.
+        """
+        self.editor.tag_remove('error', '1.0', 'end')
+        self.diagnostico.set('')
+        self.panel_diagnostico.pack_forget()
+        if error is not None:
+            nombre = NOMBRES.get(type(error), 'Límite de análisis')
+            self.diagnostico.set(f'{nombre}: {error}')
+            self.panel_diagnostico.pack(fill='x')
+            lugar = re.search(r'Línea (\d+), columna (\d+)', str(error))
+            if lugar:
+                linea = int(lugar.group(1))
+                self.editor.tag_add('error', f'{linea}.0', f'{linea}.end+1c')
+        self.resaltar_linea_actual()
 
     def codigo(self):
         """Devuelve el texto actual del editor sin el salto final que Tkinter añade automáticamente."""
@@ -248,11 +278,15 @@ class Aplicacion:
         """Reemplaza el editor por el código recibido y asocia una ruta opcional.
         Reinicia el historial y la marca de cambios, limpia resultados y enfoca el editor.
         """
+        self.revision.detener()
         self.editor.delete('1.0', 'end')
         self.editor.insert('1.0', codigo)
         self.editor.edit_reset()
         self.editor.edit_modified(False)
         self.archivo = archivo
+        self.ultimo_codigo = codigo
+        self.publicar_diagnostico(None)
+        self.revision.solicitar(codigo)
         self.titulo()
         self.limpiar()
         self.editor.focus_set()
@@ -326,6 +360,7 @@ class Aplicacion:
     def cerrar(self):
         """Cierra la ventana si está libre y el usuario resolvió los cambios pendientes."""
         if not self.ocupada and self.confirmar_cambios():
+            self.revision.detener()
             self.root.destroy()
 
     def limpiar(self):
@@ -377,6 +412,8 @@ class Aplicacion:
         """
         if self.ocupada:
             return
+        self.revision.detener()
+        self.publicar_diagnostico(None)
         codigo = self.codigo()
         self.ocupada = True
         self.limpiar()

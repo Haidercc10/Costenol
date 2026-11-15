@@ -1,0 +1,28 @@
+﻿// Programa ejecutable: escribe cada respuesta y presiona Enter //
+nombre Texto;
+edad Entero;
+precio Real;
+asiste Logico;
+Mensaje.Texto("¿Como te llamas?");
+nombre = Captura.Texto();
+Mensaje.Texto("Edad:");
+edad = Captura.Entero();
+Mensaje.Texto("Precio, con coma decimal:");
+precio = Captura.Real();
+Mensaje.Texto("¿Asistes? Verdadero o Falso:");
+asiste = Captura.Logico();
+Mensaje.Texto("Hola, " + nombre);
+Si (edad >= 18)
+    Mensaje.Texto("Mayor de edad");
+    Si (asiste)
+        Mensaje.Texto("Asistencia confirmada");
+    Sino
+        Mensaje.Texto("No asistira");
+    FinSi
+Sino
+    Mensaje.Texto("Menor de edad");
+FinSi
+total Real;
+total = precio * 2;
+Mensaje.Texto("Total por dos entradas:");
+Mensaje.Texto(total);

@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 from capturas import convertir_captura, permite_edicion, FORMATOS
 from archivos import ruta_guardado
+from recursos import carpeta_ejemplos
 
 OSCURO = {'fondo': '#0d1117', 'panel': '#161b22', 'elevado': '#212936',
            'texto': '#e6edf3', 'suave': '#9daabc', 'borde': '#303b4b',
@@ -229,7 +230,7 @@ class SelectorArchivo(filedialog.FileDialog):
 def seleccionar_archivo(parent, archivo=None, guardar=False):
     """Abre el selector oscuro y devuelve una ruta o None si se cancela.\n    Inicia en ejemplos o en la carpeta del documento actual.
     """
-    carpeta = archivo.parent if archivo else Path(__file__).parent / 'ejemplos'
+    carpeta = archivo.parent if archivo else carpeta_ejemplos()
     if not carpeta.is_dir():
         carpeta = Path(__file__).parent
     nombre = (archivo.with_suffix('.pqek').name if archivo else 'programa.pqek') if guardar else ''

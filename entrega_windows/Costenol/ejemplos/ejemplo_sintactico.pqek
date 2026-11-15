@@ -1,0 +1,15 @@
+﻿// Ejemplo independiente para probar el parser //
+a Entero;
+b Real;
+a = 2 + 3 * 4;
+b = (a - 1) / ;
+nombre Texto;
+nombre = Captura.Texto();
+Si (a >= 10)
+    Mensaje.Texto(nombre);
+    Si (b != 0)
+        Mensaje.Texto("Resultado disponible");
+    FinSi
+Sino
+    Mensaje.Texto("Valor pequeño");
+FinSi

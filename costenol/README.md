@@ -561,3 +561,13 @@ blanco. El resaltado se actualiza con la edición y el cambio de tema. No modifi
 las reglas ni los archivos; las selecciones y errores conservan prioridad visual.
 PALETAS_SINTAXIS centraliza los colores; rangos_sintaxis reconoce categorías
 sin colorear como código el interior de cadenas o comentarios.
+
+## Entrega portable Windows x64
+
+Se añadió empaquetado/Costenol.spec y construir.ps1 para reconstruir un portable
+con PyInstaller. El exe incluye el isotipo como icono. recursos.py prepara la
+identidad de la barra de tareas y localiza ejemplos editables junto al ejecutable.
+El arranque llama a multiprocessing.freeze_support() para la bienvenida separada.
+verificar_portable.py permite comprobar el paquete con --autoprueba informe.json.
+La distribución debe copiarse completa, incluyendo _internal y ejemplos.
+La prueba en un segundo equipo real es el paso final de validación de portabilidad.

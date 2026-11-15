@@ -1,4 +1,4 @@
-﻿"""Editor de escritorio para Costeñol. Ejecutar: python interfaz.py"""
+"""Editor de escritorio para Costeñol. Ejecutar: python interfaz.py"""
 from pathlib import Path
 import re
 import tkinter as tk
@@ -11,6 +11,7 @@ from inicio import InicioIndependiente
 from componentes import InterruptorTema
 from resaltado import rangos_sintaxis, PALETAS_SINTAXIS
 from archivos import ruta_guardado
+from recursos import identidad_windows, icono_ventana, ruta_tk, configurar_tk_portable
 from lexer import ErrorLexico
 from parser import ErrorSintactico
 from semantico import analizar_semantica, ErrorSemantico
@@ -362,7 +363,7 @@ class Aplicacion:
         if nombre in cache:
             return cache[nombre]
         return tk.PhotoImage(master=self.root,
-                             file=str(Path(__file__).resolve().parent / 'logo' / nombre))
+                             file=ruta_tk(Path(__file__).resolve().parent / 'logo' / nombre))
 
     def actualizar_logo(self, tema):
         """Selecciona logo oscuro para fondo claro y logo blanco para fondo oscuro.
@@ -794,13 +795,22 @@ class Aplicacion:
 
 def main():
     """Inicia Tkinter con la raíz oculta y una bienvenida animada hasta preparar el editor."""
+    configurar_tk_portable()
+    identidad_windows()
     root = tk.Tk()
     root.withdraw()
+    icono_ventana(root)
     inicio = InicioIndependiente(root, Aplicacion)
     root.mainloop()
 
 
 if __name__ == '__main__':
+    import multiprocessing
+    multiprocessing.freeze_support()
+    import sys
+    if len(sys.argv) == 3 and sys.argv[1] == '--autoprueba':
+        from verificar_portable import verificar
+        sys.exit(verificar(Aplicacion, sys.argv[2]))
     main()
 
 

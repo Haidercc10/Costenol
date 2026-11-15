@@ -3,6 +3,7 @@ import math
 from pathlib import Path
 import time
 import tkinter as tk
+from recursos import identidad_windows, icono_ventana, ruta_tk, configurar_tk_portable
 
 
 class PantallaInicio:
@@ -75,7 +76,7 @@ class PantallaInicio:
             self.programar(30, self.construir_editor)
             return
         try:
-            imagen = tk.PhotoImage(master=self.root, file=str(Path(__file__).parent / 'logo' / nombre))
+            imagen = tk.PhotoImage(master=self.root, file=ruta_tk(Path(__file__).parent / 'logo' / nombre))
             self.root._imagenes_precargadas[nombre] = imagen
             if 'blanco' in nombre:
                 factor = max(1, (imagen.width() + 359) // 360, (imagen.height() + 119) // 120)
@@ -171,8 +172,11 @@ class VistaIndependiente(PantallaInicio):
 def ejecutar_vista(conexion):
     """Punto de entrada del proceso de bienvenida; crea y usa su propio intérprete de Tk."""
     try:
+        configurar_tk_portable()
+        identidad_windows()
         root = tk.Tk()
         root.withdraw()
+        icono_ventana(root)
         VistaIndependiente(root, conexion)
         root.mainloop()
     except Exception:

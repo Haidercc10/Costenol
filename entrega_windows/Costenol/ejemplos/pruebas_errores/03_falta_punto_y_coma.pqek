@@ -1,0 +1,3 @@
+// Error sintactico: falta ; en la declaracion //
+edad Entero
+edad = 20;

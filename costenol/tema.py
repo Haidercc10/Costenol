@@ -4,6 +4,7 @@ import sys
 import tkinter as tk
 from tkinter import ttk, filedialog
 from capturas import convertir_captura, permite_edicion, FORMATOS
+from archivos import ruta_guardado
 
 OSCURO = {'fondo': '#0d1117', 'panel': '#161b22', 'elevado': '#212936',
            'texto': '#e6edf3', 'suave': '#9daabc', 'borde': '#303b4b',
@@ -210,8 +211,11 @@ class SelectorArchivo(filedialog.FileDialog):
             else:
                 avisar(self.top, 'Archivo no válido', 'Selecciona un archivo existente.')
             return
-        if not archivo.suffix:
-            archivo = archivo.with_suffix('.pqek')
+        try:
+            archivo = ruta_guardado(archivo)
+        except ValueError as error:
+            avisar(self.top, 'Extensión no permitida', str(error))
+            return
         if archivo.is_dir() or not archivo.parent.is_dir():
             avisar(self.top, 'Ruta no válida', 'Elige un nombre de archivo y una carpeta existente.')
             return

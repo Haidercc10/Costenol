@@ -44,6 +44,15 @@ class Interprete:
         """Lanza ErrorEjecucion con línea, columna y descripción de la causa."""
         raise ErrorEjecucion(f'Línea {nodo["linea"]}, columna {nodo["columna"]}: {personalizar(mensaje)}')
 
+    def texto_seguro(self, nodo, valor):
+        """Convierte un valor para salida o concatenación y controla el límite decimal de Python.
+        No desactiva límites globales; un entero demasiado largo genera un error propio con ubicación.
+        """
+        try:
+            return mostrar(valor)
+        except (ValueError, OverflowError):
+            self.error(nodo, 'entero demasiado grande para convertir a texto; reduce el tamaño del número o de la operación')
+
     def numero_finito(self, nodo, valor):
         """Devuelve el valor si es válido; rechaza reales infinitos o NaN con ErrorEjecucion."""
         if isinstance(valor, float) and not math.isfinite(valor):
@@ -114,7 +123,7 @@ class Interprete:
             izquierda = self.evaluar(nodo['izquierda'], entorno)
             derecha = self.evaluar(nodo['derecha'], entorno)
             if nodo['operador'] == '+' and (isinstance(izquierda, str) or isinstance(derecha, str)):
-                return mostrar(izquierda) + mostrar(derecha)
+                return self.texto_seguro(nodo, izquierda) + self.texto_seguro(nodo, derecha)
             try:
                 valor = OPERACIONES[nodo['operador']](izquierda, derecha)
             except ZeroDivisionError:
@@ -142,7 +151,7 @@ class Interprete:
                         self.error(nodo, 'conversión a Real fuera del rango permitido')
                 destino['valor'] = valor
             elif clase == 'Mensaje':
-                self.salida(mostrar(self.evaluar(nodo['valor'], entorno)))
+                self.salida(self.texto_seguro(nodo, self.evaluar(nodo['valor'], entorno)))
             elif clase == 'Condicional':
                 rama = nodo['entonces'] if self.evaluar(nodo['condicion'], entorno) else nodo['sino'] or []
                 # Se comparten las celdas externas; los nombres nuevos quedan locales.

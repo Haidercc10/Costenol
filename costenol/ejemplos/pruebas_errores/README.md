@@ -1,4 +1,4 @@
-﻿# Diez programas para probar errores de Costeñol
+# Diez programas para probar errores de Costeñol
 
 Ejecutar desde la carpeta costenol. Son pruebas adversas: que un programa sea
 rechazado con el error esperado significa que la comprobación funcionó.
@@ -48,31 +48,27 @@ La última combinación debe ser aceptada y mostrar Datos aceptados.
 No confundir la coma decimal dentro de una respuesta con la separación entre
 respuestas: cada dato se introduce en una captura diferente.
 
-## Brecha encontrada en el caso 10
+## Caso 10: brecha corregida
 
-Copia como respuesta la línea de entrada_extrema.txt: contiene 3000 nueves.
-La captura del entero es válida. Al elevarlo al cuadrado se genera un entero
-de 6000 dígitos aproximadamente. Python 3.11 de este entorno impone un límite
-predeterminado de 4300 dígitos en su conversión decimal a texto. Al mostrar res,
-se lanza ValueError en lugar de ErrorEjecucion con ubicación y mensaje costeño.
+Copia como respuesta la línea de entrada_extrema.txt (3000 nueves).
+La captura y el cálculo son válidos, pero el resultado supera el límite de
+conversión decimal a texto de Python con su configuración habitual.
+Ahora el intérprete genera ErrorEjecucion con línea y columna de Mensaje.Texto,
+causa técnica y orientación costeña. La consola termina sin traceback y la
+interfaz puede mostrarlo como cualquier error de ejecución.
 
-Resultado observado mediante la API del intérprete: ValueError sin convertir.
-La consola no captura esa excepción genérica y puede presentar un traceback.
-La interfaz tiene una captura general de ValueError y puede mostrar Límite de
-procesamiento, pero ese camino no ofrece ubicación ni personalización costeña.
-La ventana no se verificó porque Tcl/Tk no inicia en el entorno de desarrollo.
-El resultado depende de la versión y configuración de Python.
-
-Este caso se conserva como reproducción de una brecha pendiente; no se cambió
-el motor para ocultarla o corregirla en esta entrega de ejemplos. Una solución
-posterior debe controlar el tamaño o traducir el fallo de conversión a un error
-propio, con ubicación de la instrucción de salida.
+La conversión también se controla en concatenaciones: "Total: " + res y
+res + " total", incluso al asignar a una variable Texto. En esos casos la
+ubicación corresponde al operador +. Los números negativos están cubiertos.
+No se desactivan límites de Python ni se modifica la configuración global.
+Los valores grandes que sí pueden representarse siguen admitidos.
+El fallo depende de la versión y del límite configurado en Python.
 
 ## Alcance de esta revisión
 
 Se probaron los 10 archivos con entradas simuladas, incluyendo cuatro capturas
 inválidas y un control válido en el caso 09: 14 ejecuciones en total.
 Los detalles y los mensajes reales están en RESULTADOS.md. Los primeros nueve
-archivos respondieron según las reglas; el décimo reprodujo la brecha indicada.
+archivos respondieron según las reglas; el décimo ahora produce un error de ejecución controlado.
 Estos casos aportan cobertura adicional, pero no garantizan ausencia de otros
 fallos ni sustituyen las pruebas gráficas pendientes.

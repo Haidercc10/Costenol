@@ -520,3 +520,44 @@ Guardar como no permite sobrescribir otra pestaña abierta con la misma ruta.
 La sesión de pestañas y el tema no se persisten entre aperturas de la aplicación.
 Las funciones nuevas incluyen docstrings. Las pruebas de GUI cubren documentos,
 historial, cancelación, rutas duplicadas y switch; requieren Tkinter funcional.
+
+## Palabras reservadas y guardado exclusivo .pqek
+
+Las palabras reservadas con escritura válida (Texto, Entero, Real, Logico,
+Captura, Mensaje, Si, Sino, FinSi) se ven azules y en negrita. Se actualizan al
+escribir, pegar, cargar y cambiar de tema. No se colorean dentro de cadenas ni
+comentarios y no se altera el contenido ni la marca de cambios sin guardar.
+resaltado.py reconoce los rangos de forma tolerante a instrucciones incompletas.
+
+Solo se permite guardar programas con extensión .pqek, incluida .PQEK. Si no se
+escribe extensión, se añade .pqek; si se escribe .txt, .py, .cost u otra extensión,
+se muestra un aviso y se permite corregir. La validación se aplica tanto al
+selector como al método de escritura. Abrir otros textos sigue permitido, pero
+Guardar solicita una ruta .pqek para no sobrescribir el archivo de otro formato.
+archivos.py centraliza esta regla. Las funciones nuevas están documentadas.
+
+## Corrección de enteros extremos al mostrar o concatenar
+
+Interprete.texto_seguro controla ValueError y OverflowError durante la conversión
+a texto. Cuando un entero calculado supera el límite decimal de Python, se lanza
+ErrorEjecucion con ubicación y mensaje costeño, sin traceback en la consola.
+Mensaje.Texto conserva ahora su ubicación en el AST; las concatenaciones señalan
+el operador +. No se modifica ni se desactiva el límite global de Python.
+Las pruebas cubren salida, concatenación en ambos órdenes, negativos, asignación
+Texto, números representables y ejecución real del caso 10 desde consola.
+RESULTADOS.md de pruebas_errores fue actualizado con la ejecución de los casos.
+
+## Resaltado completo del código
+
+El editor distingue reservadas (azul y negrita), llamadas Texto(), Entero(),
+Real() y Logico() (amarillo/dorado y negrita), cadenas con sus comillas (salmón),
+comentarios (verde), números (verde suave), operadores (violeta), signos de
+puntuación (neutro) y paréntesis por profundidad (dorado, violeta, azul).
+Si (...) mantiene color de reservada, no de función. Las declaraciones como
+n Entero; siguen azules; Captura.Entero() destaca Entero en amarillo.
+
+Las tonalidades del tema claro son más oscuras para conservar contraste sobre
+blanco. El resaltado se actualiza con la edición y el cambio de tema. No modifica
+las reglas ni los archivos; las selecciones y errores conservan prioridad visual.
+PALETAS_SINTAXIS centraliza los colores; rangos_sintaxis reconoce categorías
+sin colorear como código el interior de cadenas o comentarios.

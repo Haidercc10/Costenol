@@ -3,7 +3,7 @@ from mensajes import personalizar
 import argparse
 import json
 from pathlib import Path
-from lexer import Token, ErrorLexico, tokenizar
+from lexer import Token, ErrorLexico, tokenizar, PALABRAS
 
 
 def ubicacion(token):
@@ -77,8 +77,14 @@ class Parser:
         """Reconoce una declaración, asignación, mensaje o condicional y devuelve su nodo.
         Consume los tokens correspondientes y exige los delimitadores de cada instrucción.
         """
-        if self.actual.tipo == 'IDENTIFICADOR':
-            nombre = self.exigir('IDENTIFICADOR', 'un identificador')
+        # Reconocer la forma nombre-tipo permite que semántica diagnostique
+        # también nombres reservados con su escritura exacta, como Texto Texto;.
+        declaracion_reservada = (self.actual.tipo in PALABRAS.values()
+                                 and self.pos + 1 < len(self.tokens)
+                                 and self.tokens[self.pos + 1].tipo in TIPOS)
+        if self.actual.tipo == 'IDENTIFICADOR' or declaracion_reservada:
+            nombre = self.actual
+            self.pos += 1
             if self.actual.tipo in TIPOS:
                 tipo = self.actual
                 self.pos += 1
@@ -88,14 +94,14 @@ class Parser:
             valor = self.expresion()
             self.exigir('PUNTO_Y_COMA', "';' después de la asignación")
             return {'nodo': 'Asignacion', 'nombre': nombre.valor, 'valor': valor, **ubicacion(nombre)}
-        if self.aceptar('MENSAJE'):
+        if (mensaje := self.aceptar('MENSAJE')):
             self.exigir('PUNTO', "'.' después de Mensaje")
             self.exigir('TEXTO', 'Texto después de Mensaje.')
             self.exigir('PAREN_ABRE', "'('")
             valor = self.expresion()
             self.exigir('PAREN_CIERRA', "')' después del mensaje")
             self.exigir('PUNTO_Y_COMA', "';' después del mensaje")
-            return {'nodo': 'Mensaje', 'valor': valor}
+            return {'nodo': 'Mensaje', 'valor': valor, **ubicacion(mensaje)}
         if self.aceptar('SI'):
             self.exigir('PAREN_ABRE', "'(' después de Si")
             condicion = self.expresion()

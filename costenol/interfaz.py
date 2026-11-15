@@ -1,4 +1,4 @@
-"""Editor de escritorio para Costeñol. Ejecutar: python interfaz.py"""
+﻿"""Editor de escritorio para Costeñol. Ejecutar: python interfaz.py"""
 from pathlib import Path
 import re
 import tkinter as tk
@@ -9,6 +9,8 @@ from capturas import FORMATOS
 from revision import RevisionAutomatica, EditorObservable
 from inicio import InicioIndependiente
 from componentes import InterruptorTema
+from resaltado import rangos_sintaxis, PALETAS_SINTAXIS
+from archivos import ruta_guardado
 from lexer import ErrorLexico
 from parser import ErrorSintactico
 from semantico import analizar_semantica, ErrorSemantico
@@ -412,11 +414,30 @@ class Aplicacion:
                                   foreground='#ffffff' if oscuro else '#102b4b')
         self.editor.configure(inactiveselectbackground='#395a80' if oscuro else '#bad3ef',
                               exportselection=False)
+        self.resaltar_palabras()
         self.editor.tag_lower('linea_actual')
         self.editor.tag_raise('error')
         self.editor.tag_raise('error_actual')
         self.editor.tag_raise('sel')
         self.resaltar_linea_actual()
+
+    def resaltar_palabras(self):
+        """Aplica colores por categoría y tema, sin alterar código, selección o historial.
+        Todas las categorías usan peso normal y conservan los colores de su tema.
+        """
+        if not hasattr(self.editor, '_fuente_reservadas'):
+            self.editor._fuente_reservadas = tkfont.Font(font=self.editor.cget('font'))
+            self.editor._fuente_reservadas.configure(weight='normal')
+        paleta = PALETAS_SINTAXIS[self.tema.get()]
+        for categoria, color in paleta.items():
+            fuente = (self.editor._fuente_reservadas if categoria == 'funcion'
+                      else self.editor.cget('font'))
+            self.editor.tag_configure(categoria, foreground=color, font=fuente)
+            self.editor.tag_remove(categoria, '1.0', 'end')
+            self.editor.tag_lower(categoria, 'error')
+        for categoria, inicio, fin in rangos_sintaxis(self.codigo()):
+            self.editor.tag_add(categoria, inicio, fin)
+        self.editor.tag_raise('sel')
 
     def resaltar_linea_actual(self, evento=None):
         """Sombrea la línea del cursor y acentúa su error sin borrar selección ni modificar código."""
@@ -476,6 +497,7 @@ class Aplicacion:
         if codigo == self.ultimo_codigo:
             return
         self.ultimo_codigo = codigo
+        self.resaltar_palabras()
         self.dibujar_numeros()
         self.publicar_diagnostico(None)
         if not self.ocupada:
@@ -579,6 +601,7 @@ class Aplicacion:
         self.editor.edit_modified(False)
         self.archivo = archivo
         self.ultimo_codigo = codigo
+        self.resaltar_palabras()
         self.publicar_diagnostico(None)
         self.revision.solicitar(codigo)
         self.titulo()
@@ -629,7 +652,7 @@ class Aplicacion:
         """
         if self.ocupada:
             return False
-        if self.archivo is None:
+        if self.archivo is None or self.archivo.suffix.casefold() != '.pqek':
             return self.guardar_como()
         return self.escribir(self.archivo)
 
@@ -646,6 +669,11 @@ class Aplicacion:
         """Escribe el contenido del editor en la ruta recibida con codificación UTF-8.
         Actualiza ruta y estado; devuelve True si guarda o False si hay un error de archivo.
         """
+        try:
+            archivo = ruta_guardado(archivo)
+        except ValueError as error:
+            avisar(self.root, 'Extensión no permitida', str(error))
+            return False
         for identificador, datos in self.documentos.items():
             if identificador != self.activa and datos['archivo'] is not None and datos['archivo'].resolve() == archivo.resolve():
                 avisar(self.root, 'Archivo ya abierto', 'Ese archivo ya está abierto en otra pestaña. Guarda con otro nombre.')
@@ -774,4 +802,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
 

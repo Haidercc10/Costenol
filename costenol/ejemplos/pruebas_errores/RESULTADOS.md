@@ -107,7 +107,8 @@ Datos aceptados
 
 ## 10_entero_extremo.pqek / 3000 dígitos
 
-Resultado: BRECHA: ValueError
+Resultado: ErrorEjecucion
 Capturas solicitadas: 1
 
-Exceeds the limit (4300 digits) for integer string conversion; use sys.set_int_max_str_digits() to increase the limit
+Línea 6, columna 1: entero demasiado grande para convertir a texto; reduce el tamaño del número o de la operación
+Costeñol: Bájale dos, bro: ese resultado tiene demasiados dígitos para mostrarlo. Usa números más pequeños o reduce la operación.

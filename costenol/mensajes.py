@@ -1,4 +1,4 @@
-﻿"""Identidad costeña de los diagnósticos, conservando su explicación técnica."""
+"""Identidad costeña de los diagnósticos, conservando su explicación técnica."""
 
 
 def personalizar(mensaje):
@@ -9,6 +9,7 @@ def personalizar(mensaje):
     if marca in mensaje:
         return mensaje
     reglas = [
+        ('entero demasiado grande para convertir a texto', 'Bájale dos, bro: ese resultado tiene demasiados dígitos para mostrarlo. Usa números más pequeños o reduce la operación.'),
         ('carácter inválido', 'Eche, ese símbolo no va por aquí. Cámbialo por uno que el lenguaje reconozca.'),
         ('comentario sin cierre', 'Hey, ese comentario quedó abierto. Ponle su cierre // y seguimos.'),
         ('cadena sin comillas', 'Ajá, bro, falta cerrar el texto con comillas dobles.'),

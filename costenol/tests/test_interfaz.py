@@ -133,7 +133,7 @@ class PruebasInterfaz(unittest.TestCase):
     def test_archivos_y_cambios(self):
         """Verifica guardado, apertura, cambios pendientes y cancelación usando archivos temporales."""
         with tempfile.TemporaryDirectory() as carpeta:
-            archivo = Path(carpeta) / 'programa.cost'
+            archivo = Path(carpeta) / 'programa.pqek'
             self.cargar('Mensaje.Texto("Hola");')
             self.assertTrue(self.app.escribir(archivo))
             self.app.editor.insert('end', '\n// cambio //')
@@ -148,7 +148,7 @@ class PruebasInterfaz(unittest.TestCase):
                 self.app.abrir()
             self.assertEqual(self.app.codigo(), archivo.read_text(encoding='utf-8'))
             self.assertFalse(self.app.editor.edit_modified())
-            self.assertIn('programa.cost', self.root.title())
+            self.assertIn('programa.pqek', self.root.title())
 
 
 if __name__ == '__main__':

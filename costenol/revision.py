@@ -32,7 +32,7 @@ class RevisionAutomatica:
             """Valida sin efectos y publica el primer error o None si el texto es válido."""
             if version != self.version:
                 return
-            self.pendiente = Non e 
+            self.pendiente = None 
             error = None
             try:
                 self.analizar(codigo)

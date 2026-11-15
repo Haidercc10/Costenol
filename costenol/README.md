@@ -455,3 +455,68 @@ revision.py contiene RevisionAutomatica (temporización y validación estática)
 y EditorObservable (notificación de cambios sin alterar la marca de guardado).
 Las funciones nuevas incluyen docstrings. El procesamiento sigue siendo síncrono
 y está pensado para ejercicios cortos; no es un analizador incremental por tokens.
+
+## Diagnósticos al lado de la línea con error
+
+La revisión automática y F5/F6 muestran el error junto al final de la línea,
+sin insertar texto en el programa. El aviso conserva categoría y orientación
+costeña. Si falta espacio, se abrevia visualmente; al pasar el ratón o hacer clic
+aparece el detalle completo con línea, columna y explicación en español.
+La banda de diagnóstico completa se reserva fuera de los paneles redimensionables
+para que no dependa de desplegar Resultados. El mensaje se recoloca al desplazar
+o redimensionar el editor y se adapta a Claro/Oscuro. Al corregir se ocultan
+el aviso, el globo y la banda. Las funciones nuevas incluyen documentación.
+
+## Bienvenida animada
+
+Al iniciar con python interfaz.py se oculta inmediatamente la ventana raíz.
+inicio.py muestra una pantalla oscura con el logo blanco, un movimiento suave
+y una barra de actividad animada, sin porcentajes ficticios. Precarga los logos
+por turnos y los comparte con el editor; cuando está construido y dibujado se
+revela la ventana principal y se retira la bienvenida. El tiempo mínimo de
+presentación es 800 ms; no se añade una pausa fija de varios segundos.
+
+Escape cierra la bienvenida y la aplicación. Los recursos que falten no impiden
+abrir el editor, que conserva su texto alternativo. Los callbacks de animación
+se cancelan al cerrar. Las funciones nuevas están documentadas. La construcción
+de widgets sigue en el hilo de Tkinter y puede pausar brevemente la animación;
+la bienvenida evita mostrar la ventana principal mientras se prepara.
+
+Las pruebas de ciclo de vida verifican transición, cancelación y limpieza ante
+fallos sin escritorio; la apariencia y fluidez requieren revisión local de Tkinter.
+
+## Fluidez de la bienvenida
+
+El arranque actual utiliza InicioIndependiente: la bienvenida tiene su propio
+proceso y bucle de Tkinter. La carga del editor ya no bloquea la animación.
+La barra se actualiza aproximadamente cada 16 ms y calcula su posición según
+el tiempo transcurrido. No se promete una tasa fija, que depende del equipo.
+El proceso principal prepara la ventana oculta y avisa al splash cuando está
+lista. La bienvenida solo carga su logo visible; no comparte objetos Tk entre
+procesos. Si la bienvenida falla, el editor intenta abrir de todas formas.
+La apariencia y la fluidez deben comprobarse localmente; las pruebas sin ventana
+cubren coordinación, cierre y recuperación del canal. No se añade tiempo mínimo
+artificial en este modo independiente.
+
+## Menús, pestañas y switch de tema
+
+La cabecera conserva el logo grande de Costeñol. Encima hay una barra de menús
+Archivo, Editar, Selección, Ver, Ejecutar y Ayuda. Solo se ofrecen acciones
+implementadas; no hay terminal integrado ni extensiones de VS Code.
+El interruptor de tema alterna Claro/Oscuro con clic, Espacio o Enter. Su indicador
+se anima y adapta la paleta de los archivos abiertos y de los nuevos diálogos.
+
+Nuevo y Abrir crean pestañas sin descartar los documentos existentes. Abrir una
+ruta ya abierta selecciona su pestaña. Cada documento conserva editor, cursor,
+selección, historial de deshacer, cambios pendientes y resultados. El análisis
+automático y F5/F6 se aplican únicamente al documento activo. No ejecuta varios
+programas simultáneamente; durante una ejecución no se permite cambiar de archivo.
+
+Ctrl+Tab cambia de pestaña. Ctrl+W, el icono de cierre, el botón central o el botón
+Cerrar pestaña cierran el documento activo preguntando por cambios sin guardar.
+Al cerrar el último se crea un documento vacío. Salir revisa todos los documentos;
+Cancelar interrumpe el cierre sin descartar las pestañas. Guardar conserva la ruta;
+Guardar como no permite sobrescribir otra pestaña abierta con la misma ruta.
+La sesión de pestañas y el tema no se persisten entre aperturas de la aplicación.
+Las funciones nuevas incluyen docstrings. Las pruebas de GUI cubren documentos,
+historial, cancelación, rutas duplicadas y switch; requieren Tkinter funcional.

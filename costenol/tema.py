@@ -78,6 +78,22 @@ def aplicar_tema(root, nombre='Oscuro'):
     estilo.map('TCombobox', fieldbackground=[('readonly', c['panel'])],
                foreground=[('readonly', c['texto'])], selectbackground=[('readonly', c['panel'])],
                selectforeground=[('readonly', c['texto'])])
+    estilo.configure('TMenubutton', background=c['fondo'], foreground=c['texto'], padding=(10, 5))
+    estilo.map('TMenubutton', background=[('active', c['elevado'])])
+    estilo.configure('Documentos.TNotebook', background=c['fondo'], borderwidth=0, tabmargins=0)
+    estilo.configure('Documentos.TNotebook.Tab', background=c['elevado'], foreground=c['suave'], padding=(14, 9))
+    estilo.map('Documentos.TNotebook.Tab', background=[('selected', c['panel'])], foreground=[('selected', c['texto'])])
+    if not hasattr(root, '_icono_cierre'):
+        root._icono_cierre = tk.PhotoImage(master=root, width=12, height=12)
+        estilo.element_create('Cerrar', 'image', root._icono_cierre)
+        estilo.layout('Documentos.TNotebook.Tab', [('Notebook.tab', {'sticky': 'nswe', 'children': [
+            ('Notebook.padding', {'side': 'top', 'sticky': 'nswe', 'children': [
+                ('Notebook.label', {'side': 'left', 'sticky': ''}),
+                ('Cerrar', {'side': 'right', 'sticky': ''})]})]})])
+    root._icono_cierre.blank()
+    for i in range(3, 9):
+        root._icono_cierre.put(c['suave'], (i, i))
+        root._icono_cierre.put(c['suave'], (11-i, i))
     barra_oscura(root)
 
 
@@ -104,6 +120,12 @@ def dialogo(parent, titulo, mensaje, opciones, entrada=False, tipo_captura=None)
         else:
             campo = ttk.Entry(marco, width=48)
         campo.pack(fill='x', pady=(0, 8))
+        # Ayuda persistente: se ve sin tener que descubrir un tooltip con el ratón.
+        instruccion = ('Selecciona Verdadero o Falso y presiona Enter para continuar.'
+                       if tipo_captura == 'Logico'
+                       else 'Ingresa el dato y presiona Enter para continuar.')
+        ttk.Label(marco, text=instruccion, foreground=COLORES['suave'],
+                  wraplength=460, justify='left').pack(anchor='w', pady=(0, 8))
         ttk.Label(marco, textvariable=error_entrada, foreground=COLORES['error'],
                   wraplength=460).pack(anchor='w', pady=(0, 12))
         if tipo_captura and tipo_captura != 'Logico':
@@ -208,3 +230,4 @@ def seleccionar_archivo(parent, archivo=None, guardar=False):
         carpeta = Path(__file__).parent
     nombre = (archivo.with_suffix('.pqek').name if archivo else 'programa.pqek') if guardar else ''
     return SelectorArchivo(parent, guardar).go(str(carpeta), pattern='*', default=nombre)
+

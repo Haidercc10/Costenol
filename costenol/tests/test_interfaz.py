@@ -107,6 +107,29 @@ class PruebasInterfaz(unittest.TestCase):
         self.assertGreater(self.app.revision.version, version)
         self.assertTrue(self.app.editor.edit_modified())
 
+    def test_error_en_linea_y_retiro(self):
+        """Verifica mensaje superpuesto sin contaminar el archivo y retirada al corregir."""
+        self.root.deiconify()
+        self.root.geometry('940x600')
+        self.cargar('x Entero;\nx="hola";')
+        from semantico import ErrorSemantico
+        codigo = self.app.codigo()
+        self.app.publicar_diagnostico(ErrorSemantico(
+            'Línea 2, columna 1: no se puede asignar Texto a Entero\n'
+            'Costeñol: Eche, esa mezcla no cuadra. Revisa el tipo.'))
+        self.root.update_idletasks()
+        self.app.ubicar_diagnostico()
+        self.assertEqual(self.app.linea_error, 2)
+        self.assertEqual(self.app.diagnostico_inline.winfo_manager(), 'place')
+        self.assertIn('Error semántico', self.app.diagnostico.get())
+        self.assertEqual(self.app.codigo(), codigo)
+        self.app.abrir_detalle_error()
+        self.assertIsNotNone(self.app.detalle_error)
+        self.app.publicar_diagnostico(None)
+        self.assertIsNone(self.app.detalle_error)
+        self.assertFalse(self.app.diagnostico_inline.winfo_manager())
+        self.assertEqual(self.app.diagnostico.get(), '')
+
     def test_archivos_y_cambios(self):
         """Verifica guardado, apertura, cambios pendientes y cancelación usando archivos temporales."""
         with tempfile.TemporaryDirectory() as carpeta:

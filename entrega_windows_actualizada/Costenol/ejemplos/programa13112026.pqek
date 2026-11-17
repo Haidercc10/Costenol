@@ -1,0 +1,24 @@
+nombre Texto;
+num1 Entero;
+num2 Entero;
+res Entero;
+
+Mensaje.Texto("Escribe tu nombre:");
+nombre = Captura.Texto();
+
+Mensaje.Texto("Primer numero:");
+num1 = Captura.Entero();
+
+Mensaje.Texto("Segundo numero:");
+num2 = Captura.Entero();
+
+res = num1 + num2;
+
+Mensaje.Texto("Hola, " + nombre);
+Mensaje.Texto("El resultado es: " + res);
+
+Si (res >= 1)
+    Mensaje.Texto("La suma es mayor o igual a diez.");
+Sino
+    Mensaje.Texto("La suma es menor que diez.");
+FinSi

@@ -1,0 +1,7 @@
+n1 Entero;
+n1 = Captura.Entero();
+n Entero;
+n = Captura.Entero();
+resultado Entero;
+resultado = n1 + n;
+Mensaje.Texto(resultado);

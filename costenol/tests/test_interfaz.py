@@ -60,6 +60,8 @@ class PruebasInterfaz(unittest.TestCase):
             self.app.ejecutar()
         self.assertIn('captura cancelada', self.salida())
         self.assertNotIn('Ejecución finalizada.', self.salida())
+        self.assertEqual(self.app.diagnostico.get(), '')
+        self.assertFalse(self.app.editor.tag_ranges('error'))
 
     def test_cambio_tema_conserva_documento(self):
         """Comprueba que alternar temas conserva código, salida y cambios pendientes."""

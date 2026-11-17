@@ -1,0 +1,4 @@
+// Error semantico: concatenar produce Texto, no Entero //
+res Entero;
+res = "Total: " + (2 + 3);
+Mensaje.Texto(res);

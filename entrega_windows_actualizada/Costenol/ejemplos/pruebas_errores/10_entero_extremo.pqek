@@ -1,0 +1,6 @@
+// Caso limite: introduce los 3000 nueves de entrada_extrema.txt //
+num Entero;
+num = Captura.Entero();
+res Entero;
+res = num * num;
+Mensaje.Texto(res);

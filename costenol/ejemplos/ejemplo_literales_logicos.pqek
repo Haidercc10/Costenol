@@ -1,0 +1,12 @@
+// Saludo inicial con literal Logico //
+nombre Texto;
+logic Logico;
+logic = Verdadero;
+Mensaje.Texto("¿Como te llamas? " + logic);
+nombre = Captura.Texto();
+Mensaje.Texto("Hola, " + nombre);
+Si (logic)
+    Mensaje.Texto("El saludo esta activo");
+FinSi
+logic = Falso;
+Mensaje.Texto("Estado final: " + logic);

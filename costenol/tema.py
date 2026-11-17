@@ -4,7 +4,7 @@ import sys
 import tkinter as tk
 from tkinter import ttk, filedialog
 from capturas import convertir_captura, permite_edicion, FORMATOS
-from archivos import ruta_guardado
+from archivos import ruta_guardado, ruta_apertura
 from recursos import carpeta_ejemplos
 
 OSCURO = {'fondo': '#0d1117', 'panel': '#161b22', 'elevado': '#212936',
@@ -200,13 +200,18 @@ class SelectorArchivo(filedialog.FileDialog):
                             selectbackground=COLORES['seleccion'], selectforeground=COLORES['texto'])
         for campo in (self.filter, self.selection):
             campo.configure(bg=COLORES['fondo'], fg=COLORES['texto'], relief='flat')
-        ttk.Label(self.top, text='Carpetas a la izquierda · Archivos a la derecha\nFiltro: *.pqek, *.cost o * para todos', padding=8).pack(side='top', fill='x')
+        ttk.Label(self.top, text='Carpetas a la izquierda · Archivos a la derecha\nProgramas Costeñol: *.pqek', padding=8).pack(side='top', fill='x')
         barra_oscura(self.top)
 
     def ok_command(self):
         """Valida la selección y confirma sobrescrituras; devuelve la ruta al cerrar."""
         archivo = Path(self.get_selection())
         if not self.guardar:
+            try:
+                archivo = ruta_apertura(archivo)
+            except ValueError as error:
+                avisar(self.top, 'Extensión no permitida', str(error))
+                return
             if archivo.is_file():
                 self.quit(str(archivo))
             else:
@@ -234,5 +239,5 @@ def seleccionar_archivo(parent, archivo=None, guardar=False):
     if not carpeta.is_dir():
         carpeta = Path(__file__).parent
     nombre = (archivo.with_suffix('.pqek').name if archivo else 'programa.pqek') if guardar else ''
-    return SelectorArchivo(parent, guardar).go(str(carpeta), pattern='*', default=nombre)
+    return SelectorArchivo(parent, guardar).go(str(carpeta), pattern='*.pqek', default=nombre)
 

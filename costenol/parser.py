@@ -156,7 +156,7 @@ class Parser:
         """Reconoce un literal, variable, captura o expresión entre paréntesis.
         Devuelve su nodo o lanza ErrorSintactico si no puede comenzar una expresión.
         """
-        literal = self.aceptar('NUM_ENTERO', 'NUM_REAL', 'CADENA')
+        literal = self.aceptar('NUM_ENTERO', 'NUM_REAL', 'CADENA', 'VERDADERO', 'FALSO')
         if literal:
             return {'nodo': 'Literal', 'tipo': literal.tipo, 'lexema': literal.valor, **ubicacion(literal)}
         nombre = self.aceptar('IDENTIFICADOR')
@@ -175,7 +175,7 @@ class Parser:
             valor = self.expresion()
             self.exigir('PAREN_CIERRA', "')' para cerrar la expresión")
             return valor
-        raise self.error('un número, cadena, variable, Captura.Tipo() o expresión entre paréntesis')
+        raise self.error('un número, cadena, Verdadero, Falso, variable, Captura.Tipo() o expresión entre paréntesis')
 
 
 def analizar(codigo: str):

@@ -1,0 +1,29 @@
+num Entero;  
+//num Entero; num = 1 + (;    // 
+// num_= = 1 ; //     
+//num Entero; num = 1 + (2);//  
+//num = 1;       //            
+//entero Entero;//     
+
+num = 1;        
+
+Si(num == 1)
+Mensaje.Texto("Haider");
+ 
+Mensaje.Texto("Vanessa")
+;Sino
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FinSi

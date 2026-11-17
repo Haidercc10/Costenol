@@ -35,7 +35,7 @@ class AnalizadorSemantico:
         """
         clase = nodo['nodo']
         if clase == 'Literal':
-            return {'NUM_ENTERO': 'Entero', 'NUM_REAL': 'Real', 'CADENA': 'Texto'}[nodo['tipo']]
+            return {'NUM_ENTERO': 'Entero', 'NUM_REAL': 'Real', 'CADENA': 'Texto', 'VERDADERO': 'Logico', 'FALSO': 'Logico'}[nodo['tipo']]
         if clase == 'Captura':
             return nodo['tipo']
         if clase == 'Variable':
@@ -54,8 +54,8 @@ class AnalizadorSemantico:
             operador = nodo['operador']
             numericos = izquierda in NUMERICOS and derecha in NUMERICOS
             if operador == '+' and (
-                    (izquierda == 'Texto' and derecha in NUMERICOS | {'Texto'})
-                    or (derecha == 'Texto' and izquierda in NUMERICOS)):
+                    (izquierda == 'Texto' and derecha in NUMERICOS | {'Texto', 'Logico'})
+                    or (derecha == 'Texto' and izquierda in NUMERICOS | {'Logico'})):
                 return 'Texto'
             if operador in {'+', '-', '*', '/'}:
                 if not numericos:

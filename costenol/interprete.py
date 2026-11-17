@@ -15,6 +15,11 @@ class ErrorEjecucion(ValueError):
     pass
 
 
+class EjecucionCancelada(ErrorEjecucion):
+    """Interrupción voluntaria de una captura; la interfaz la presenta como aviso, sin error de código."""
+    pass
+
+
 OPERACIONES = {'+': operator.add, '-': operator.sub, '*': operator.mul,
                '/': operator.truediv, '==': operator.eq, '!=': operator.ne,
                '>': operator.gt, '<': operator.lt, '>=': operator.ge, '<=': operator.le}
@@ -88,9 +93,9 @@ class Interprete:
         except (EOFError, StopIteration):
             self.error(nodo, f'no hay datos disponibles para Captura.{tipo}()')
         except KeyboardInterrupt:
-            self.error(nodo, 'captura cancelada')
+            raise EjecucionCancelada('captura cancelada por el usuario') from None
         if texto is None:
-            self.error(nodo, 'captura cancelada')
+            raise EjecucionCancelada('captura cancelada por el usuario')
         try:
             return convertir_captura(tipo, texto)
         except ValueError as error:
@@ -103,6 +108,8 @@ class Interprete:
         """
         clase = nodo['nodo']
         if clase == 'Literal':
+            if nodo['tipo'] in {'VERDADERO', 'FALSO'}:
+                return nodo['tipo'] == 'VERDADERO'
             if nodo['tipo'] == 'CADENA':
                 return self.cadena(nodo)
             try:
@@ -186,6 +193,8 @@ def main():
     args = cli.parse_args()
     try:
         ejecutar(args.archivo.read_text(encoding='utf-8-sig'))
+    except EjecucionCancelada:
+        cli.exit(0, 'Ejecución cancelada por el usuario.\n')
     except (OSError, UnicodeError, ErrorLexico, ErrorSintactico, ErrorSemantico, ErrorEjecucion) as error:
         cli.exit(1, f'{type(error).__name__}: {error}\n')
 

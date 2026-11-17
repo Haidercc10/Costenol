@@ -47,12 +47,12 @@ class PruebasSemanticas(unittest.TestCase):
                 analizar_semantica(f'x Real; x = {expresion};')
 
     def test_concatenacion_tipo_y_limites(self):
-        """Comprueba que texto con números produce Texto y que no se concatena Logico."""
-        tabla = analizar_semantica('t Texto; t="a" + 2; t=3,5 + "b";')
+        """Admite Texto con enteros, reales y lógicos; la suma numérica no convierte Logico."""
+        tabla = analizar_semantica('t Texto; t="a" + 2; t=3,5 + "b"; t="Estado: " + (1==1);')
         self.assertEqual(tabla['t']['tipo'], 'Texto')
-        for expresion in ['"a" + (1==1)', '(1==1) + "a"']:
-            with self.subTest(expresion=expresion), self.assertRaises(ErrorSemantico):
-                analizar_semantica(f'Mensaje.Texto({expresion});')
+        analizar_semantica('Mensaje.Texto((1==1) + " activo");')
+        with self.assertRaises(ErrorSemantico):
+            analizar_semantica('Mensaje.Texto(1 + (1==1));')
 
     def test_condiciones_y_comparaciones(self):
         """Comprueba tipos de comparaciones y exige condiciones lógicas."""

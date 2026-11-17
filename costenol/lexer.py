@@ -16,7 +16,7 @@ class ErrorLexico(ValueError):
     pass
 
 PALABRAS = {p: p.upper() for p in (
-    'Texto', 'Entero', 'Real', 'Logico', 'Captura', 'Mensaje', 'Si', 'Sino', 'FinSi'
+    'Texto', 'Entero', 'Real', 'Logico', 'Captura', 'Mensaje', 'Si', 'Sino', 'FinSi', 'Verdadero', 'Falso'
 )}
 SIMBOLOS = {
     '==': 'IGUAL', '!=': 'DIFERENTE', '>=': 'MAYOR_IGUAL', '<=': 'MENOR_IGUAL',

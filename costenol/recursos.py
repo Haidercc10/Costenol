@@ -20,15 +20,54 @@ def identidad_windows():
             pass
 
 
-def icono_ventana(root):
-    """Aplica el ICO incluido al escritorio Windows y sus nuevos diálogos, si está disponible."""
+def tema_barra_windows():
+    """Consulta el tono del sistema usado por la barra de tareas, independiente del tema del editor."""
     if sys.platform == 'win32':
-        import tkinter as tk
-        ruta = Path(__file__).resolve().parent / 'logo' / 'costenol.ico'
         try:
-            root.iconbitmap(default=ruta_tk(ruta))
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                r'Software\Microsoft\Windows\CurrentVersion\Themes\Personalize') as clave:
+                valor, _ = winreg.QueryValueEx(clave, 'SystemUsesLightTheme')
+                return 'Claro' if valor else 'Oscuro'
+        except OSError:
+            pass
+    return 'Oscuro'
+
+
+def icono_ventana(root, vigilar=False):
+    """Aplica el isotipo con contraste para la barra de tareas y lo actualiza si cambia Windows.
+    La barra oscura usa símbolo claro; la barra clara usa símbolo oscuro. Conserva referencias Tk.
+    """
+    import tkinter as tk
+    tema = tema_barra_windows()
+    if getattr(root, '_tema_icono_sistema', None) != tema:
+        base = Path(__file__).resolve().parent / 'logo'
+        nombre = 'isotipo_oscuro' if tema == 'Claro' else 'isotipo_claro'
+        try:
+            original = tk.PhotoImage(master=root, file=ruta_tk(base / (nombre + '.png')))
+            factor = max(1, (max(original.width(), original.height()) + 127) // 128)
+            root._logo_sistema = original.subsample(factor, factor)
+            root.iconphoto(True, root._logo_sistema)
+            if sys.platform == 'win32':
+                root.iconbitmap(default=ruta_tk(base / (nombre + '.ico')))
+            root._tema_icono_sistema = tema
         except (tk.TclError, OSError):
             pass
+    if vigilar and not getattr(root, '_vigila_icono', False):
+        root._vigila_icono = True
+        def comprobar():
+            """Revisa el tema del sistema cada cuatro segundos mientras existe la ventana."""
+            if root.winfo_exists():
+                icono_ventana(root)
+                root._tarea_icono = root.after(4000, comprobar)
+        def liberar(evento):
+            """Cancela la vigilancia al destruir la raíz para no dejar callbacks pendientes."""
+            if evento.widget is root and getattr(root, '_tarea_icono', None):
+                root.after_cancel(root._tarea_icono)
+                root._tarea_icono = None
+        root.bind('<Destroy>', liberar, add='+')
+        root._tarea_icono = root.after(4000, comprobar)
+    return getattr(root, '_logo_sistema', None)
 
 
 def ruta_tk(archivo):

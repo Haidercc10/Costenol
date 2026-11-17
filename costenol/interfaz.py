@@ -10,17 +10,17 @@ from revision import RevisionAutomatica, EditorObservable
 from inicio import InicioIndependiente
 from componentes import InterruptorTema
 from resaltado import rangos_sintaxis, PALETAS_SINTAXIS
-from archivos import ruta_guardado
+from archivos import ruta_guardado, ruta_apertura
 from recursos import identidad_windows, icono_ventana, ruta_tk, configurar_tk_portable
 from lexer import ErrorLexico
 from parser import ErrorSintactico
 from semantico import analizar_semantica, ErrorSemantico
-from interprete import ejecutar, ErrorEjecucion
+from interprete import ejecutar, ErrorEjecucion, EjecucionCancelada
 
 ERRORES = (ErrorLexico, ErrorSintactico, ErrorSemantico, ErrorEjecucion)
 NOMBRES = {ErrorLexico: 'Error léxico', ErrorSintactico: 'Error sintáctico',
            ErrorSemantico: 'Error semántico', ErrorEjecucion: 'Error de ejecución'}
-EJEMPLO = 'nombre Texto;\nMensaje.Texto("¿Como te llamas?");\nnombre = Captura.Texto();\nMensaje.Texto("Hola, " + nombre);\n'
+EJEMPLO = '// Saludo inicial //\nnombre Texto;\nMensaje.Texto("¿Como te llamas?");\nnombre = Captura.Texto();\nMensaje.Texto("Hola, " + nombre);\n'
 
 
 class Aplicacion:
@@ -49,9 +49,8 @@ class Aplicacion:
         cabecera = ttk.Frame(root, padding=(16, 12))
         cabecera.pack(fill='x')
         self.cargar_logo(cabecera)
-        ttk.Label(cabecera, text='Editor y ejecución de programas', padding=(20, 0)).pack(side='left')
         selector_tema = ttk.Frame(cabecera)
-        selector_tema.pack(side='right')
+        selector_tema.pack(side='right', anchor='n', pady=(0, 0))
         ttk.Label(selector_tema, text='Tema', padding=(0, 0, 8, 0)).pack(side='left')
         self.tema = tk.StringVar(value='Oscuro')
         self.selector_tema = InterruptorTema(selector_tema, self.tema, self.cambiar_tema)
@@ -348,14 +347,7 @@ class Aplicacion:
         self.logo_etiqueta = ttk.Label(cabecera, style='Titulo.TLabel')
         self.logo_etiqueta.pack(side='left', padx=(0, 8))
         self.actualizar_logo('Oscuro')
-        try:
-            isotipo = self.imagen_logo('Puente, sol y ondas_ isotipo costero.png')
-            factor = max(1, (max(isotipo.width(), isotipo.height()) + 127) // 128)
-            self.logo_icono = isotipo.subsample(factor, factor)
-            # True propaga el símbolo sin letras a los nuevos diálogos de la aplicación.
-            self.root.iconphoto(True, self.logo_icono)
-        except (tk.TclError, OSError):
-            self.logo_icono = None
+        self.logo_icono = icono_ventana(self.root, vigilar=True)
 
     def imagen_logo(self, nombre):
         """Reutiliza la precarga del inicio o lee el recurso al construir directamente la aplicación."""
@@ -367,7 +359,7 @@ class Aplicacion:
 
     def actualizar_logo(self, tema):
         """Selecciona logo oscuro para fondo claro y logo blanco para fondo oscuro.
-        Solo cambia la imagen de cabecera; el icono sin letras permanece fijo.
+        Solo cambia la cabecera; el icono de tareas sigue de forma independiente el tema de Windows.
         """
         self.logo_cabecera = self.logos_cabecera.get(tema)
         if self.logo_cabecera is not None:
@@ -626,7 +618,7 @@ class Aplicacion:
             self.nueva_pestana('')
 
     def abrir(self):
-        """Solicita una ruta y carga texto UTF-8, aceptando .pqek, .cost y otros archivos.
+        """Solicita y valida una ruta .pqek antes de leer su contenido UTF-8.
         Consulta cambios pendientes y muestra un diálogo si falla la lectura.
         """
         if self.ocupada:
@@ -634,9 +626,9 @@ class Aplicacion:
         nombre = seleccionar_archivo(self.root, self.archivo)
         if nombre:
             try:
-                archivo = Path(nombre)
+                archivo = ruta_apertura(nombre)
                 codigo = archivo.read_text(encoding='utf-8-sig')
-            except (OSError, UnicodeError) as error:
+            except (OSError, UnicodeError, ValueError) as error:
                 avisar(self.root, 'No se pudo abrir', str(error))
                 return
             for identificador, datos in self.documentos.items():
@@ -772,6 +764,10 @@ class Aplicacion:
                 analizar_semantica(codigo)
                 self.imprimir('Código válido: análisis léxico, sintáctico y semántico correctos.', 'ok')
             self.estado.set('Ejecución finalizada' if ejecutar_programa else 'Código válido')
+        except EjecucionCancelada as cancelacion:
+            self.publicar_diagnostico(None)
+            self.imprimir(f'Ejecución cancelada: {cancelacion}.')
+            self.estado.set('Ejecución cancelada por el usuario')
         except ERRORES as error:
             self.mostrar_error(error)
         except (RecursionError, ValueError, OverflowError) as error:

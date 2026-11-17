@@ -27,7 +27,7 @@ Se conservan los lexemas originales; todavía no se convierten a valores Python.
 Decisiones provisionales que el enunciado no detalla:
 - Comparaciones: ==, !=, >, <, >=, <=.
 - Dentro de cadenas, una barra invertida permite escapar el carácter siguiente.
-Los literales lógicos y los operadores lógicos quedan pendientes de definición.
+Los literales lógicos son Verdadero y Falso. Los operadores lógicos compuestos siguen pendientes.
 
 ## Ejercicios
 
@@ -81,7 +81,7 @@ con su comando original. No se modificó ejemplos/ejemplo.pqek para conservar tu
     suma         = producto { ("+" | "-") producto } ;
     producto     = unaria { ("*" | "/") unaria } ;
     unaria       = ("+" | "-") unaria | primaria ;
-    primaria     = NUM_ENTERO | NUM_REAL | CADENA | IDENTIFICADOR
+    primaria     = NUM_ENTERO | NUM_REAL | CADENA | VERDADERO | FALSO | IDENTIFICADOR
                    | captura | "(" expresion ")" ;
     captura      = "Captura" "." tipo "(" ")" ;
 
@@ -99,7 +99,7 @@ no se escriben en los programas Costeñol.
   Si, Sino y FinSi no llevan punto y coma.
 - Solo se permite una comparación por nivel de expresión; no se admiten
   comparaciones encadenadas como a < b < c.
-- Los valores literales lógicos y operadores lógicos siguen pendientes.
+- Se admiten los literales Verdadero y Falso; los operadores lógicos compuestos siguen pendientes.
   Sí se reconoce una declaración Logico y Captura.Logico().
 - No se exige un espacio concreto después de Si: el lexer ignora espacios.
 - Se detiene en el primer error; no recupera ni enumera errores posteriores.
@@ -174,8 +174,8 @@ Estas decisiones concretan aspectos que el enunciado no define por completo:
 - Captura.Tipo() tiene el tipo indicado sin leer datos durante esta etapa.
 - Mensaje.Texto admite expresiones de los cuatro tipos. La futura ejecución
   deberá convertir el valor a texto para mostrarlo.
-- Siguen sin definirse literales ni operadores lógicos adicionales. Puedes
-  obtener Logico mediante comparaciones o Captura.Logico().
+- Puedes obtener Logico mediante Verdadero, Falso, comparaciones o Captura.Logico().
+  No se han definido operadores lógicos compuestos.
 
 ### Pruebas y límites
 
@@ -230,8 +230,8 @@ salto de línea. Una variable declarada y no usada puede quedar sin valor.
 Las entradas numéricas y lógicas ignoran espacios en sus extremos.
 Una entrada inválida detiene el programa en el primer error, sin reintentar.
 EOF o cancelación de captura también producen ErrorEjecucion con ubicación.
-Los valores lógicos anteriores son formatos de captura, no nuevos literales
-que se puedan escribir sin comillas dentro del código fuente.
+En captura se admite Verdadero/Falso sin distinguir mayúsculas. En el código
+fuente los literales se escriben exactamente Verdadero y Falso, sin comillas.
 
 ### Cadenas y números
 
@@ -571,3 +571,43 @@ El arranque llama a multiprocessing.freeze_support() para la bienvenida separada
 verificar_portable.py permite comprobar el paquete con --autoprueba informe.json.
 La distribución debe copiarse completa, incluyendo _internal y ejemplos.
 La prueba en un segundo equipo real es el paso final de validación de portabilidad.
+
+## Ajustes de entrega: 16 de noviembre de 2026
+
+- Texto + Real ya funcionaba; ahora Texto + Logico y Logico + Texto también
+  producen Texto, mostrando Verdadero/Falso. La suma numérica sigue rechazando Logico.
+- El icono sin letras consulta SystemUsesLightTheme de Windows: barra clara,
+  isotipo oscuro; barra oscura, isotipo claro. Se revisa cada cuatro segundos.
+  Es independiente del switch del editor. Los accesos directos anclados pueden
+  conservar el icono del archivo según el comportamiento de Windows.
+- Abrir admite solo .pqek (también .PQEK), con validación de ruta además del filtro.
+  Ya no se abren .cost, .txt ni otros formatos desde la interfaz.
+- El switch queda alineado hacia el borde superior de la cabecera y se retiró
+  el subtítulo Editor y ejecución de programas, conservando el logo grande.
+- El ejemplo inicial empieza con // Saludo inicial //.
+- Cancelar una captura es voluntario: detiene el programa y muestra un aviso,
+  sin diagnóstico rojo ni resaltado de error. Los datos inválidos siguen validándose.
+  EjecucionCancelada distingue esa interrupción; no ejecuta instrucciones posteriores.
+
+
+## Literales de tipo Logico
+
+Verdadero y Falso son literales nativos del código fuente, sin comillas. El lexer
+produce VERDADERO/FALSO; el parser crea nodos Literal; la semántica les asigna
+Logico y el intérprete los convierte a bool de Python. No se mezclan con Entero.
+Se pueden asignar, comparar, usar como condición y concatenar con Texto.
+El resaltado los reconoce automáticamente como palabras reservadas, en azul
+sin negrita. No pueden usarse como nombres de variables en ninguna combinación
+de mayúsculas. Los literales en expresiones sí distinguen mayúsculas.
+
+    logic Logico;
+    logic = Verdadero;
+    Mensaje.Texto("Estado: " + logic);
+    Si (Falso)
+        Mensaje.Texto("No se ejecuta");
+    Sino
+        Mensaje.Texto("Se ejecuta");
+    FinSi
+
+Captura.Logico sigue admitiendo Verdadero/Falso sin distinguir mayúsculas al
+introducir un dato. La guía PDF anterior no incluye esta ampliación.

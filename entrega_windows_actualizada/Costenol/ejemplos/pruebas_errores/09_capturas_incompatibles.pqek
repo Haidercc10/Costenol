@@ -1,0 +1,10 @@
+// Repetir con las combinaciones de entrada indicadas en README //
+nombre Texto;
+edad Entero;
+precio Real;
+asiste Logico;
+nombre = Captura.Texto();
+edad = Captura.Entero();
+precio = Captura.Real();
+asiste = Captura.Logico();
+Mensaje.Texto("Datos aceptados");

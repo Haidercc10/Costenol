@@ -1,0 +1,12 @@
+// Primer programa de prueba //
+nombre Texto;
+edad Entero;
+pi Real;
+nombre = Captura.Texto();
+edad = Captura.Entero();
+pi = 3,1416;
+Si (edad >= 18)
+    Mensaje.Texto("Mayor de edad");
+Sino
+    Mensaje.Texto("Menor de edad");
+FinSi

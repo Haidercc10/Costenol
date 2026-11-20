@@ -43,16 +43,29 @@ def icono_ventana(root, vigilar=False):
     if getattr(root, '_tema_icono_sistema', None) != tema:
         base = Path(__file__).resolve().parent / 'logo'
         nombre = 'isotipo_oscuro' if tema == 'Claro' else 'isotipo_claro'
+        aplicado = False
+        # El icono nativo se aplica tanto a esta ventana como a los futuros diálogos.
+        # Su carga es independiente del PNG para que un fallo no deje el icono genérico de Tk.
+        if sys.platform == 'win32':
+            try:
+                ruta = ruta_tk(base / (nombre + '.ico'))
+                root.iconbitmap(ruta)
+                root.iconbitmap(default=ruta)
+                aplicado = True
+            except (tk.TclError, OSError):
+                pass
         try:
             original = tk.PhotoImage(master=root, file=ruta_tk(base / (nombre + '.png')))
             factor = max(1, (max(original.width(), original.height()) + 127) // 128)
             root._logo_sistema = original.subsample(factor, factor)
-            root.iconphoto(True, root._logo_sistema)
-            if sys.platform == 'win32':
-                root.iconbitmap(default=ruta_tk(base / (nombre + '.ico')))
-            root._tema_icono_sistema = tema
+            # En Windows el ICO conserva sus tamaños específicos para título y barra de tareas.
+            if not aplicado:
+                root.iconphoto(True, root._logo_sistema)
+                aplicado = True
         except (tk.TclError, OSError):
             pass
+        if aplicado:
+            root._tema_icono_sistema = tema
     if vigilar and not getattr(root, '_vigila_icono', False):
         root._vigila_icono = True
         def comprobar():

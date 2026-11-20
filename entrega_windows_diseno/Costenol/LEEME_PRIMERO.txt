@@ -1,0 +1,40 @@
+COSTEÑOL - ENTREGA CON DISEÑO ACTUALIZADO - 20/11/2026
+
+INICIO
+1. Extrae TODO el ZIP antes de abrirlo.
+2. Abre Costenol/Costenol.exe.
+3. Conserva _internal junto al .exe: no copies solo el ejecutable.
+
+REQUISITOS
+Windows 10/11 x64. No requiere instalar Python ni conexión a Internet.
+Usa una carpeta donde puedas guardar tus programas.
+
+DOCUMENTOS
+- docs/Manual_del_programador_Costenol.pdf: arquitectura y mantenimiento.
+- docs/Guia_de_sustentacion_Costenol.pdf: guion de 8-10 minutos y preguntas.
+
+DEMOSTRACIÓN
+Abrir ejemplos/sustentacion/01_demostracion.pqek.
+F5 analiza sin ejecutar. F6 ejecuta; ingresar Ana, 20 y 12,5.
+Resultado: Hola, Ana / Total: 25,0 / Asiste: Verdadero / Mayor de edad.
+Con edad 16 la rama cambia a Menor de edad.
+Los archivos 02 a 07 contienen errores intencionales.
+08_calculo.pqek muestra 24, 5,0 y 29,0.
+
+INTERFAZ
+Iconos laterales con tooltips; switch debajo de Limpiar.
+Logo superior, isotipo de ventana y barra de tareas.
+Hasta 15 pestañas, X al pasar el mouse y resaltado reutilizable.
+División arrastrable entre editor y resultados.
+Se abre y guarda el formato .pqek.
+
+COMPROBAR EN OTRO EQUIPO
+[ ] Abrir, cambiar tema y comprobar logos e icono de tareas.
+[ ] Ejecutar el ejemplo correcto y ambos caminos de Si/Sino.
+[ ] Mostrar los cuatro tipos de error con línea y causa.
+[ ] Abrir varias pestañas, alternar, guardar y reabrir un .pqek.
+[ ] Ajustar la división de resultados y cerrar correctamente.
+Fecha / Windows / resultado:
+
+Una versión anterior funcionó en otro equipo según la prueba del usuario.
+Repetir la comprobación con esta compilación antes de entregar.

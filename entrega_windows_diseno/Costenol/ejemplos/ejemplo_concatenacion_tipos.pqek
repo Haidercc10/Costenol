@@ -1,0 +1,8 @@
+﻿// Texto con reales y logicos //
+precio Real;
+asiste Logico;
+precio = 12,5;
+asiste = 1 == 1;
+Mensaje.Texto("Precio: " + precio);
+Mensaje.Texto("Asistencia: " + asiste);
+Mensaje.Texto(asiste + " es el estado actual");

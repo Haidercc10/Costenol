@@ -1,0 +1,3 @@
+resultado Real;
+resultado = 10 / 0;
+Mensaje.Texto(resultado);

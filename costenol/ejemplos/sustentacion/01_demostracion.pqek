@@ -1,0 +1,20 @@
+// Saludo inicial //
+nombre Texto;
+edad Entero;
+precio Real;
+asiste Logico;
+total Real;
+Mensaje.Texto("¿Como te llamas?");
+nombre = Captura.Texto();
+edad = Captura.Entero();
+precio = Captura.Real();
+asiste = Verdadero;
+total = precio * 2;
+Mensaje.Texto("Hola, " + nombre);
+Mensaje.Texto("Total: " + total);
+Mensaje.Texto("Asiste: " + asiste);
+Si (edad >= 18)
+    Mensaje.Texto("Mayor de edad");
+Sino
+    Mensaje.Texto("Menor de edad");
+FinSi

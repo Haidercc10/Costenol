@@ -611,3 +611,23 @@ de mayúsculas. Los literales en expresiones sí distinguen mayúsculas.
 
 Captura.Logico sigue admitiendo Verdadero/Falso sin distinguir mayúsculas al
 introducir un dato. La guía PDF anterior no incluye esta ampliación.
+
+
+### Interfaz compacta
+
+El isotipo acompaña al menú Archivo y el logo completo aparece a la derecha de la barra de menús. La barra lateral contiene iconos para abrir (Ctrl+O), analizar (F5), ejecutar (F6), cerrar la pestaña activa (Ctrl+W) y limpiar su código y resultados (Ctrl+Shift+L). Cada icono muestra su función al pasar el ratón o recibir el foco con Tab; Enter o Espacio lo activa. El interruptor de tema está debajo de Limpiar en la barra lateral. El cambio se aplica de inmediato, sin una animación retardada del indicador ni repintados parciales forzados.
+
+Limpiar pide confirmación y solo afecta al documento activo; Ctrl+Z recupera su código. No elimina el archivo guardado ni modifica las demás pestañas. El icono junto a RESULTADOS limpia únicamente la salida.
+
+Las pestañas tienen un estilo plano y muestran su X de cierre al pasar el mouse. Se permiten como máximo 15 documentos abiertos (incluidos los nuevos sin guardar); el intento de abrir el número 16 muestra un aviso de recursos. Cerrar uno permite abrir otro. Abrir un archivo ya abierto selecciona su pestaña sin duplicarla.
+
+El resaltado se conserva por documento al alternar pestañas. Solo se recalculan los rangos cuando cambia el código; cambiar el tema actualiza sus colores sin volver a analizar los tokens. Los rangos se aplican por lotes para reducir llamadas a Tcl/Tk.
+
+La barra lateral queda delimitada por un separador vertical. El panel RESULTADOS tiene encabezado propio y una división horizontal arrastrable para ajustar su altura respecto al editor. La ventana usa el ICO del isotipo de Costeñol, con PNG como alternativa si falla el recurso nativo.
+
+
+## Documentación de entrega actualizada
+
+- [Manual del programador](docs/Manual_del_programador_Costenol.pdf): arquitectura, clases, convenciones, pruebas y empaquetado.
+- [Guía de sustentación](docs/Guia_de_sustentacion_Costenol.pdf): guion, ejemplos y preguntas.
+- Los ocho casos verificados están en `ejemplos/sustentacion/`.

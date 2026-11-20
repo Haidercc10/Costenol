@@ -1,0 +1,16 @@
+VERIFICACIÓN DE ENTREGA - 20/11/2026
+
+Construcción: Windows x64 / Python 3.12.14 / PyInstaller 6.22.3.
+Pruebas de fuente: 89 ejecutadas, OK, sin omisiones; 41,380 s.
+Entorno aislado: adaptador de rutas Tcl/Tk para las pruebas gráficas.
+Durante la destrucción de algunas raíces de prueba Tcl emitió avisos ThemeChanged;
+no fallaron las pruebas. No se observó ese aviso en el recorrido del ejecutable.
+Ejemplos de sustentación: 8 verificados, salidas/categorías esperadas.
+PDF: manual 8 páginas y guía 5 páginas, renderizados y revisados.
+Ejecutable abierto en el escritorio de Windows: inicio, logos e isotipo,
+divisiones de la consola, F5 y cambio a tema claro comprobados.
+El paquete incluye tcl86t.dll, tk86t.dll, _tcl_data y _tk_data.
+La advertencia de PyInstaller sobre la búsqueda por ctypes de tcl86t.dll
+no impidió incluir dicha DLL ni abrir la interfaz con Tk.
+No se realizó en esta sesión una prueba de esta compilación en otro equipo.
+Ver LEEME_PRIMERO.txt para el recorrido manual de aceptación.

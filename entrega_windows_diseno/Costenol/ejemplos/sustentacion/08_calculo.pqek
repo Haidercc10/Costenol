@@ -1,0 +1,9 @@
+producto Entero;
+cociente Real;
+resultado Real;
+producto = 6 * (4);
+cociente = 10 / (2);
+resultado = producto + cociente;
+Mensaje.Texto("Producto: " + producto);
+Mensaje.Texto("Cociente: " + cociente);
+Mensaje.Texto("Resultado: " + resultado);

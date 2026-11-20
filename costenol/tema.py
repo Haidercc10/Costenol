@@ -21,13 +21,14 @@ COLORES = dict(OSCURO)
 TEMA_ACTUAL = 'Oscuro'
 
 
-def barra_oscura(ventana):
+def barra_oscura(ventana, actualizar_geometria=True):
     """Solicita una barra de título oscura en Windows; otros sistemas conservan su decoración."""
     if sys.platform != 'win32':
         return
     try:
         import ctypes
-        ventana.update_idletasks()
+        if actualizar_geometria:
+            ventana.update_idletasks()
         handle = ctypes.windll.user32.GetParent(ventana.winfo_id())
         valor = ctypes.c_int(TEMA_ACTUAL == 'Oscuro')
         for atributo in (20, 19):
@@ -55,9 +56,17 @@ def aplicar_tema(root, nombre='Oscuro'):
                           'disabledForeground': '#68768a', 'font': '{Segoe UI} 10'}.items():
         root.option_add('*' + opcion, valor)
     estilo = ttk.Style(root)
-    estilo.theme_use('clam')
+    if estilo.theme_use() != 'clam':
+        estilo.theme_use('clam')
     estilo.configure('.', background=c['fondo'], foreground=c['texto'], font=('Segoe UI', 10))
     estilo.configure('TFrame', background=c['fondo'])
+    estilo.configure('Actividad.TFrame', background=c['panel'])
+    estilo.configure('Divisor.TFrame', background=c['borde'])
+    estilo.configure('Acento.TFrame', background=c['acento'])
+    estilo.configure('Consola.TFrame', background=c['panel'])
+    estilo.configure('ConsolaTitulo.TLabel', background=c['panel'], foreground=c['texto'],
+                     font=('Segoe UI', 9))
+    estilo.configure('Consola.TPanedwindow', background=c['borde'], sashwidth=4, sashpad=0)
     estilo.configure('TLabel', background=c['fondo'], foreground=c['suave'])
     estilo.configure('Titulo.TLabel', foreground=c['texto'], font=('Segoe UI', 21, 'bold'))
     estilo.configure('TButton', background=c['elevado'], foreground=c['texto'],
@@ -82,21 +91,32 @@ def aplicar_tema(root, nombre='Oscuro'):
                selectforeground=[('readonly', c['texto'])])
     estilo.configure('TMenubutton', background=c['fondo'], foreground=c['texto'], padding=(10, 5))
     estilo.map('TMenubutton', background=[('active', c['elevado'])])
-    estilo.configure('Documentos.TNotebook', background=c['fondo'], borderwidth=0, tabmargins=0)
-    estilo.configure('Documentos.TNotebook.Tab', background=c['elevado'], foreground=c['suave'], padding=(14, 9))
-    estilo.map('Documentos.TNotebook.Tab', background=[('selected', c['panel'])], foreground=[('selected', c['texto'])])
+    estilo.configure('Documentos.TNotebook', background=c['fondo'], borderwidth=0,
+                     tabmargins=(0, 0, 0, 0))
+    estilo.configure('Documentos.TNotebook.Tab', foreground=c['suave'], padding=(12, 16))
+    estilo.map('Documentos.TNotebook.Tab', foreground=[('selected', c['texto']), ('active', c['texto'])])
     if not hasattr(root, '_icono_cierre'):
-        root._icono_cierre = tk.PhotoImage(master=root, width=12, height=12)
-        estilo.element_create('Cerrar', 'image', root._icono_cierre)
-        estilo.layout('Documentos.TNotebook.Tab', [('Notebook.tab', {'sticky': 'nswe', 'children': [
-            ('Notebook.padding', {'side': 'top', 'sticky': 'nswe', 'children': [
-                ('Notebook.label', {'side': 'left', 'sticky': ''}),
-                ('Cerrar', {'side': 'right', 'sticky': ''})]})]})])
+        root._icono_cierre = tk.PhotoImage(master=root, width=16, height=16)
+        root._cierre_vacio = tk.PhotoImage(master=root, width=16, height=16)
+        root._fondos_pestana = [tk.PhotoImage(master=root, width=1, height=1) for _ in range(3)]
+        estilo.element_create('Cerrar', 'image', root._cierre_vacio,
+                              ('active', root._icono_cierre))
+        estilo.element_create('CosteTab', 'image', root._fondos_pestana[0],
+                              ('selected', root._fondos_pestana[1]),
+                              ('active', root._fondos_pestana[2]), sticky='nswe')
+    # Las imágenes lisas sustituyen al elemento nativo que dibujaba los bordes.
+    for imagen, color in zip(root._fondos_pestana, (c['fondo'], c['panel'], c['elevado'])):
+        imagen.put(color, (0, 0))
+    estilo.layout('Documentos.TNotebook', [('Notebook.client', {'sticky': 'nswe'})])
+    estilo.layout('Documentos.TNotebook.Tab', [('CosteTab', {'sticky': 'nswe', 'children': [
+        ('Notebook.padding', {'sticky': 'nswe', 'children': [
+            ('Notebook.label', {'side': 'left', 'sticky': ''}),
+            ('Cerrar', {'side': 'right', 'sticky': ''})]})]})])
     root._icono_cierre.blank()
-    for i in range(3, 9):
-        root._icono_cierre.put(c['suave'], (i, i))
-        root._icono_cierre.put(c['suave'], (11-i, i))
-    barra_oscura(root)
+    for i in range(4, 12):
+        root._icono_cierre.put(c['texto'], (i, i))
+        root._icono_cierre.put(c['texto'], (15-i, i))
+    barra_oscura(root, actualizar_geometria=False)
 
 
 def dialogo(parent, titulo, mensaje, opciones, entrada=False, tipo_captura=None):

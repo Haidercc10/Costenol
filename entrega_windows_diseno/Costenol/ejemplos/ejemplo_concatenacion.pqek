@@ -1,0 +1,8 @@
+﻿num1 Entero;
+num2 Entero;
+res Entero;
+num1 = Captura.Entero();
+num2 = Captura.Entero();
+res = num1 + num2;
+Mensaje.Texto("El resultado de la operación es: " + res);
+

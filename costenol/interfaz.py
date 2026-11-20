@@ -8,7 +8,7 @@ from tema import aplicar_tema, COLORES, dialogo, avisar, seleccionar_archivo
 from capturas import FORMATOS
 from revision import RevisionAutomatica, EditorObservable
 from inicio import InicioIndependiente
-from componentes import InterruptorTema
+from componentes import InterruptorTema, IconoAccion, Tooltip
 from resaltado import rangos_sintaxis, PALETAS_SINTAXIS
 from archivos import ruta_guardado, ruta_apertura
 from recursos import identidad_windows, icono_ventana, ruta_tk, configurar_tk_portable
@@ -16,6 +16,8 @@ from lexer import ErrorLexico
 from parser import ErrorSintactico
 from semantico import analizar_semantica, ErrorSemantico
 from interprete import ejecutar, ErrorEjecucion, EjecucionCancelada
+
+MAX_PESTANAS = 15
 
 ERRORES = (ErrorLexico, ErrorSintactico, ErrorSemantico, ErrorEjecucion)
 NOMBRES = {ErrorLexico: 'Error léxico', ErrorSintactico: 'Error sintáctico',
@@ -45,42 +47,43 @@ class Aplicacion:
         root.minsize(920, 560)
         root.protocol('WM_DELETE_WINDOW', self.cerrar)
         aplicar_tema(root)
-        self.crear_menus()
-        cabecera = ttk.Frame(root, padding=(16, 12))
-        cabecera.pack(fill='x')
-        self.cargar_logo(cabecera)
-        selector_tema = ttk.Frame(cabecera)
-        selector_tema.pack(side='right', anchor='n', pady=(0, 0))
-        ttk.Label(selector_tema, text='Tema', padding=(0, 0, 8, 0)).pack(side='left')
         self.tema = tk.StringVar(value='Oscuro')
-        self.selector_tema = InterruptorTema(selector_tema, self.tema, self.cambiar_tema)
-        self.selector_tema.pack(side='left')
-        barra = ttk.Frame(root, padding=(16, 0, 16, 10))
-        barra.pack(fill='x')
-        self.botones = []
-        for texto, funcion in [('Analizar · F5', self.analizar), ('Ejecutar · F6', self.ejecutar),
-                               ('Cerrar pestaña · Ctrl+W', self.cerrar_pestana)]:
-            boton = ttk.Button(barra, text=texto, command=funcion,
-                               style='Accion.TButton' if funcion in (self.analizar, self.ejecutar) else 'TButton')
-            boton.pack(side='left', padx=(0, 6))
-            self.botones.append(boton)
-        paneles = ttk.Panedwindow(root, orient='vertical')
+        self.crear_menus()
+        self.area_principal = ttk.Frame(root)
+        self.area_principal.pack(fill='both', expand=True)
+        self.barra_lateral = ttk.Frame(self.area_principal, style='Actividad.TFrame', width=48)
+        self.barra_lateral.pack(side='left', fill='y')
+        self.crear_barra_lateral()
+        self.divisor_lateral = ttk.Frame(self.area_principal, style='Divisor.TFrame', width=1)
+        self.divisor_lateral.pack(side='left', fill='y')
+        self.espacio_trabajo = ttk.Frame(self.area_principal)
+        self.espacio_trabajo.pack(side='left', fill='both', expand=True)
+        paneles = ttk.Panedwindow(self.espacio_trabajo, orient='vertical', style='Consola.TPanedwindow')
         self.paneles = paneles
-        paneles.pack(fill='both', expand=True, padx=16)
-        self.panel_diagnostico = ttk.Label(root, textvariable=self.diagnostico,
+        paneles.pack(fill='both', expand=True)
+        self.panel_diagnostico = ttk.Label(self.espacio_trabajo, textvariable=self.diagnostico,
                                            foreground=COLORES['error'], wraplength=850,
                                            justify='left', padding=(10, 8))
-        self.pestanas = ttk.Notebook(paneles, style='Documentos.TNotebook')
-        paneles.add(self.pestanas, weight=3)
+        self.marco_documentos = ttk.Frame(paneles)
+        paneles.add(self.marco_documentos, weight=4)
+        self.pestanas = ttk.Notebook(self.marco_documentos, style='Documentos.TNotebook')
+        self.pestanas.pack(fill='both', expand=True)
+        self.cargar_logo(self.barra_menus)
         self.pestanas.bind('<<NotebookTabChanged>>', self.cambiar_documento)
         self.pestanas.bind('<Button-2>', self.cerrar_con_raton)
         self.pestanas.bind('<ButtonRelease-1>', self.cerrar_desde_icono)
-        salida = ttk.Frame(paneles)
+        salida = ttk.Frame(paneles, style='Consola.TFrame')
+        self.panel_resultados = salida
         paneles.add(salida, weight=1)
-        encabezado = ttk.Frame(salida)
+        encabezado = ttk.Frame(salida, style='Consola.TFrame', padding=(12, 0, 6, 0))
         encabezado.pack(fill='x')
-        ttk.Label(encabezado, text='RESULTADOS', padding=(0, 6)).pack(side='left')
-        ttk.Button(encabezado, text='Limpiar', command=self.limpiar).pack(side='right')
+        titulo_resultados = ttk.Frame(encabezado, style='Consola.TFrame')
+        titulo_resultados.pack(side='left', fill='y')
+        ttk.Label(titulo_resultados, text='RESULTADOS', style='ConsolaTitulo.TLabel',
+                  padding=(0, 9, 0, 7)).pack()
+        ttk.Frame(titulo_resultados, style='Acento.TFrame', height=2).pack(fill='x')
+        self.limpiar_salida_icono = IconoAccion(encabezado, 'limpiar', self.limpiar, 'Limpiar resultados', ancho=34, alto=30)
+        self.limpiar_salida_icono.pack(side='right')
         self.salida = tk.Text(salida, height=10, wrap='word', state='disabled',
                               font=('Consolas', 11), bg=COLORES['panel'], fg=COLORES['texto'],
                               selectbackground=COLORES['seleccion'], selectforeground=COLORES['texto'],
@@ -93,19 +96,78 @@ class Aplicacion:
         self.salida.tag_configure('ok', foreground=COLORES['ok'])
         self.estado = tk.StringVar(value='Listo · F5 analiza · F6 ejecuta')
         self.barra_estado = ttk.Label(root, textvariable=self.estado, padding=(16, 8))
-        self.barra_estado.pack(side='bottom', fill='x', before=self.paneles)
+        self.barra_estado.pack(side='bottom', fill='x', before=self.area_principal)
         for tecla, funcion in [('<Control-n>', self.nuevo), ('<Control-o>', self.abrir),
                                ('<Control-s>', self.guardar), ('<F5>', self.analizar), ('<F6>', self.ejecutar)]:
             root.bind(tecla, lambda e, f=funcion: self.atajo(f))
+        self.root.bind('<Control-Shift-L>', lambda e: self.atajo(self.limpiar_todo))
         self.root.bind('<Control-w>', lambda e: self.atajo(self.cerrar_pestana))
         self.root.bind('<Control-Tab>', lambda e: self.atajo(self.siguiente_pestana))
         self.root.bind('<Control-Shift-S>', lambda e: self.atajo(self.guardar_como))
         self.nueva_pestana(EJEMPLO)
 
+    def crear_barra_lateral(self):
+        """Construye las acciones compactas con iconos y tooltips, sin rótulos permanentes."""
+        self.botones = []
+        acciones = [('abrir', self.abrir, 'Abrir archivo · Ctrl+O'),
+                    ('analizar', self.analizar, 'Analizar · F5'),
+                    ('ejecutar', self.ejecutar, 'Ejecutar · F6'),
+                    ('cerrar', self.cerrar_pestana, 'Cerrar pestaña · Ctrl+W'),
+                    ('limpiar', self.limpiar_todo, 'Limpiar código y resultados · Ctrl+Shift+L')]
+        for icono, funcion, ayuda in acciones:
+            boton = IconoAccion(self.barra_lateral, icono, lambda f=funcion: self.atajo(f), ayuda)
+            boton.pack(side='top', pady=2)
+            self.botones.append(boton)
+        self.selector_tema = InterruptorTema(self.barra_lateral, self.tema, self.cambiar_tema, compacto=True)
+        self.selector_tema.pack(side='top', pady=(10, 12), padx=2)
+        self.ayuda_tema = Tooltip(self.selector_tema,
+                                 lambda: 'Cambiar a tema ' + ('claro' if self.tema.get() == 'Oscuro' else 'oscuro'))
+
+    def actualizar_isotipo_menu(self, tema):
+        """Muestra un isotipo pequeño junto a Archivo, con contraste para el tema de la aplicación."""
+        nombre = 'isotipo_claro.png' if tema == 'Oscuro' else 'isotipo_oscuro.png'
+        try:
+            if not hasattr(self, 'isotipos_menu'):
+                self.isotipos_menu = {}
+            if tema not in self.isotipos_menu:
+                original = self.imagen_logo(nombre)
+                factor = max(1, (max(original.width(), original.height()) + 39) // 40)
+                self.isotipos_menu[tema] = original.subsample(factor, factor)
+            self.isotipo_menu_imagen = self.isotipos_menu[tema]
+            self.isotipo_menu.configure(image=self.isotipo_menu_imagen, text='')
+        except (tk.TclError, OSError):
+            self.isotipo_menu.configure(image='', text='C')
+
+    def limpiar_todo(self):
+        """Limpia código y resultados del archivo activo tras confirmación, sin borrar archivos.
+        Conserva el historial de deshacer del código y no modifica las demás pestañas.
+        """
+        if self.ocupada:
+            return
+        if self.codigo().strip() or self.salida.get('1.0', 'end-1c').strip():
+            respuesta = dialogo(self.root, 'Limpiar archivo activo',
+                                '¿Limpiar el código y los resultados de esta pestaña?\n'
+                                'El archivo guardado no se borra. Puedes recuperar el código con Ctrl+Z.',
+                                [('Limpiar', True), ('Cancelar', None)])
+            if respuesta is not True:
+                return
+        self.revision.detener()
+        self.publicar_diagnostico(None)
+        self.editor.edit_separator()
+        self.editor.delete('1.0', 'end')
+        self.editor.edit_separator()
+        self.limpiar()
+        self.modificado()
+        self.estado.set('Código y resultados limpiados · Ctrl+Z recupera el código')
+        self.editor.focus_set()
+
     def crear_menus(self):
         """Construye una barra de menús estilo editor con acciones reales y atajos visibles."""
         self.barra_menus = ttk.Frame(self.root, padding=(6, 2))
         self.barra_menus.pack(fill='x')
+        self.isotipo_menu = ttk.Label(self.barra_menus)
+        self.isotipo_menu.pack(side='left', padx=(2, 6))
+        self.actualizar_isotipo_menu('Oscuro')
         self.menus = []
         self.botones_menu = []
         grupos = [
@@ -116,7 +178,8 @@ class Aplicacion:
                         ('Rehacer', lambda: self.evento_editor('<<Redo>>'), 'Ctrl+Y'),
                         ('Cortar', lambda: self.evento_editor('<<Cut>>'), 'Ctrl+X'),
                         ('Copiar', lambda: self.evento_editor('<<Copy>>'), 'Ctrl+C'),
-                        ('Pegar', lambda: self.evento_editor('<<Paste>>'), 'Ctrl+V')]),
+                        ('Pegar', lambda: self.evento_editor('<<Paste>>'), 'Ctrl+V'),
+                        ('Limpiar código y resultados', self.limpiar_todo, 'Ctrl+Shift+L')]),
             ('Selección', [('Seleccionar todo', self.seleccionar_todo, 'Ctrl+A')]),
             ('Ver', [('Cambiar claro / oscuro', lambda: self.selector_tema.alternar(), ''),
                      ('Siguiente archivo', self.siguiente_pestana, 'Ctrl+Tab')]),
@@ -182,6 +245,11 @@ class Aplicacion:
         """Crea y selecciona un documento con editor e historial independientes, sin descartar otros."""
         if self.ocupada:
             return
+        if len(self.documentos) >= MAX_PESTANAS:
+            avisar(self.root, 'Límite de pestañas',
+                   'Eche, ya tienes 15 pestañas abiertas. Abrir otra consumiría demasiados recursos. '
+                   'Cierra una pestaña antes de abrir un documento nuevo.')
+            return
         self.guardar_contexto()
         self.revision.detener()
         if self.activa is not None:
@@ -230,8 +298,11 @@ class Aplicacion:
             for inicio, fin in zip(indices[::2], indices[1::2]):
                 self.salida.tag_add(tag, inicio, fin)
         self.salida.configure(state='disabled')
-        self.actualizar_colores_editor(self.editor, self.numeros)
-        self.configurar_resaltado()
+        if getattr(self.editor, '_tema_configurado', None) != self.tema.get():
+            self.actualizar_colores_editor(self.editor, self.numeros)
+            self.configurar_resaltado()
+        else:
+            self.resaltar_linea_actual()
         self.titulo()
         self.revision.solicitar(self.codigo())
         self.editor.focus_set()
@@ -287,7 +358,6 @@ class Aplicacion:
 
     def crear_editor(self, zona):
         """Construye un editor independiente con sus barras, historial y resaltado por documento."""
-        ttk.Label(zona, text='CÓDIGO · Costeñol', padding=(0, 4)).pack(anchor='w')
         marco = ttk.Frame(zona)
         marco.pack(fill='both', expand=True)
         self.numeros = tk.Canvas(marco, width=52, bg=COLORES['panel'], highlightthickness=0)
@@ -338,14 +408,15 @@ class Aplicacion:
         for tema, nombre in variantes.items():
             try:
                 imagen = self.imagen_logo(nombre)
-                factor = max(1, (imagen.width() + 279) // 280,
-                             (imagen.height() + 79) // 80)
+                factor = max(1, (imagen.width() + 199) // 200,
+                             (imagen.height() + 47) // 48)
                 self.logos_cabecera[tema] = imagen.subsample(factor, factor)
             except (tk.TclError, OSError):
                 # Una variante ausente no debe impedir iniciar la aplicación.
                 continue
         self.logo_etiqueta = ttk.Label(cabecera, style='Titulo.TLabel')
-        self.logo_etiqueta.pack(side='left', padx=(0, 8))
+        self.logo_etiqueta.pack(side='right', padx=(16, 12), pady=2)
+        self.logo_etiqueta.lift()
         self.actualizar_logo('Oscuro')
         self.logo_icono = icono_ventana(self.root, vigilar=True)
 
@@ -372,7 +443,13 @@ class Aplicacion:
         Actualiza los widgets clásicos y las etiquetas de error; los diálogos heredan la paleta.
         """
         aplicar_tema(self.root, self.tema.get())
+        self.ayuda_tema.ocultar()
         self.selector_tema.dibujar()
+        self.actualizar_isotipo_menu(self.tema.get())
+        for boton in self.botones:
+            boton.tooltip.ocultar()
+            boton.dibujar()
+        self.limpiar_salida_icono.dibujar()
         self.colorear_menus()
         for datos in self.documentos.values():
             self.actualizar_colores_editor(datos['editor'], datos['numeros'])
@@ -413,11 +490,17 @@ class Aplicacion:
         self.editor.tag_raise('error_actual')
         self.editor.tag_raise('sel')
         self.resaltar_linea_actual()
+        self.editor._tema_configurado = self.tema.get()
 
     def resaltar_palabras(self):
         """Aplica colores por categoría y tema, sin alterar código, selección o historial.
         Todas las categorías usan peso normal y conservan los colores de su tema.
         """
+        codigo = self.codigo()
+        anterior = getattr(self.editor, '_sintaxis_cache', None)
+        clave = (codigo, self.tema.get())
+        if anterior == clave:
+            return
         if not hasattr(self.editor, '_fuente_reservadas'):
             self.editor._fuente_reservadas = tkfont.Font(font=self.editor.cget('font'))
             self.editor._fuente_reservadas.configure(weight='normal')
@@ -426,10 +509,19 @@ class Aplicacion:
             fuente = (self.editor._fuente_reservadas if categoria == 'funcion'
                       else self.editor.cget('font'))
             self.editor.tag_configure(categoria, foreground=color, font=fuente)
-            self.editor.tag_remove(categoria, '1.0', 'end')
             self.editor.tag_lower(categoria, 'error')
-        for categoria, inicio, fin in rangos_sintaxis(self.codigo()):
-            self.editor.tag_add(categoria, inicio, fin)
+        # El cambio de tema modifica colores, pero conserva los rangos ya calculados.
+        if anterior is None or anterior[0] != codigo:
+            for categoria in paleta:
+                self.editor.tag_remove(categoria, '1.0', 'end')
+            grupos = {}
+            for categoria, inicio, fin in rangos_sintaxis(codigo):
+                grupos.setdefault(categoria, []).extend((inicio, fin))
+            # Agrupar rangos reduce las llamadas Python/Tcl de una por token a una por lote.
+            for categoria, indices in grupos.items():
+                for inicio in range(0, len(indices), 1000):
+                    self.editor.tag_add(categoria, *indices[inicio:inicio+1000])
+        self.editor._sintaxis_cache = clave
         self.editor.tag_raise('sel')
 
     def resaltar_linea_actual(self, evento=None):

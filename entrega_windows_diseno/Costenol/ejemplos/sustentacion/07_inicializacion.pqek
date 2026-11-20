@@ -1,0 +1,7 @@
+edad Entero;
+res Entero;
+edad = Captura.Entero();
+Si (edad >= 18)
+    res = 1;
+FinSi
+Mensaje.Texto(res);

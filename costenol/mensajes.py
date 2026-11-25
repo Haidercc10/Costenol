@@ -9,6 +9,8 @@ def personalizar(mensaje):
     if marca in mensaje:
         return mensaje
     reglas = [
+        ('un espacio entre Si y el paréntesis', 'Eche, bro, separa el Si del paréntesis: escribe Si (...) y seguimos.'),
+        ('no se puede asignar Captura.', 'Eche, bro, esa captura no corresponde al tipo de la variable. Usa la captura que te indica el mensaje.'),
         ('entero demasiado grande para convertir a texto', 'Bájale dos, bro: ese resultado tiene demasiados dígitos para mostrarlo. Usa números más pequeños o reduce la operación.'),
         ('carácter inválido', 'Eche, ese símbolo no va por aquí. Cámbialo por uno que el lenguaje reconozca.'),
         ('comentario sin cierre', 'Hey, ese comentario quedó abierto. Ponle su cierre // y seguimos.'),

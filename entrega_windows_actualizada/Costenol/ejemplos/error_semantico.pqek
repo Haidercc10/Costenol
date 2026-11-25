@@ -1,3 +1,0 @@
-﻿// Error intencional: no se puede asignar Texto a Entero //
-edad Entero;
-edad = 2;

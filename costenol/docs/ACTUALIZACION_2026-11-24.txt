@@ -1,0 +1,30 @@
+COSTEÑOL - ACTUALIZACIÓN 24/11/2026
+
+Las reglas de esta nota ya están integradas en el Manual del programador y la Guía de sustentación, actualizados el 24/11/2026.
+
+1. CAPTURAS CON TIPO ESTRICTO
+La asignación directa de una captura exige el mismo tipo que la variable.
+Incorrecto: n Real; n = Captura.Entero();
+Correcto:   n Real; n = Captura.Real();
+También se valida si la captura está entre paréntesis.
+El error semántico propone la captura correcta antes de ejecutar o pedir datos.
+Asignar un valor entero a Real sigue permitido: n Real; n = 4;
+
+2. SEPARACIÓN DE Si
+Incorrecto: Si(Verdadero) FinSi
+Correcto:   Si (Verdadero) FinSi
+El error sintáctico indica línea, columna y la separación que falta.
+No se exige esa separación en Mensaje.Texto() ni Captura.Real().
+
+3. VERIFICACIÓN
+96 pruebas de fuente aprobadas el 24/11/2026, sin omisiones.
+El manual y la guía actualizados describen las 96 pruebas y las dos reglas vigentes.
+Las guías breve y de estudio antiguas se conservan como material histórico.
+
+4. EJEMPLO
+Abrir ejemplos/ejemplo_notas.pqek: las tres variables Real usan Captura.Real().
+Los números decimales se ingresan con coma, por ejemplo 3,5.
+
+5. PORTABLE
+Extraer todo el ZIP y abrir Costenol.exe. Mantener _internal junto al ejecutable.
+Windows 10/11 x64; no requiere instalar Python.

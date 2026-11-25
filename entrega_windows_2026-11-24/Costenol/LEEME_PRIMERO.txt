@@ -1,0 +1,29 @@
+COSTEÑOL - PORTABLE ACTUALIZADO 24/11/2026
+
+1. Extrae TODO el ZIP en una carpeta nueva.
+2. Abre Costenol/Costenol.exe.
+3. Conserva _internal junto al ejecutable; no copies solo el .exe.
+
+Windows 10/11 x64. No requiere instalar Python ni conexión a Internet.
+
+CORRECCIONES
+- Una variable Real exige Captura.Real() en una asignación directa.
+  Captura.Entero() se rechaza con un error semántico que propone la captura correcta.
+- Escribe Si (...), separado del paréntesis; Si(...) produce error sintáctico.
+- Se conservan el diseño mejorado, los logos y la consola dividida.
+
+DOCUMENTACIÓN
+El manual del programador y la guía de sustentación de docs/ están actualizados
+al 24/11/2026 y ya integran las dos correcciones. La nota TXT las resume.
+
+EJEMPLOS
+Para las tres notas: ejemplos/ejemplo_notas.pqek.
+Para la sustentación: ejemplos/sustentacion/.
+F5 analiza; F6 ejecuta. Los decimales usan coma: 3,5.
+
+PRUEBA DE LA VERSIÓN NUEVA
+[ ] Inicio e iconos.
+[ ] Captura Real correcta y rechazo de Captura.Entero() en variable Real.
+[ ] Error para Si(...) y aceptación de Si (...).
+[ ] Guardar y abrir .pqek; cambiar tema y pestañas.
+Una versión anterior se probó en otro equipo. Repetir con esta nueva compilación.

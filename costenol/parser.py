@@ -102,7 +102,11 @@ class Parser:
             self.exigir('PAREN_CIERRA', "')' después del mensaje")
             self.exigir('PUNTO_Y_COMA', "';' después del mensaje")
             return {'nodo': 'Mensaje', 'valor': valor, **ubicacion(mensaje)}
-        if self.aceptar('SI'):
+        if (si := self.aceptar('SI')):
+            # El lenguaje exige separar Si del paréntesis, aunque ambos sean tokens válidos.
+            if (self.actual.tipo == 'PAREN_ABRE' and self.actual.linea == si.linea
+                    and self.actual.columna == si.columna + len(si.valor)):
+                raise self.error('un espacio entre Si y el paréntesis; escribe Si (...)')
             self.exigir('PAREN_ABRE', "'(' después de Si")
             condicion = self.expresion()
             self.exigir('PAREN_CIERRA', "')' después de la condición")

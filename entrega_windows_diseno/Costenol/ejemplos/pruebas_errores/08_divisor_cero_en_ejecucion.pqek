@@ -1,4 +1,0 @@
-// Introduce 7; el divisor se calcula como cero //
-num Entero;
-num = Captura.Entero();
-Mensaje.Texto(10 / (num - num));

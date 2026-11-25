@@ -101,7 +101,7 @@ no se escriben en los programas Costeñol.
   comparaciones encadenadas como a < b < c.
 - Se admiten los literales Verdadero y Falso; los operadores lógicos compuestos siguen pendientes.
   Sí se reconoce una declaración Logico y Captura.Logico().
-- No se exige un espacio concreto después de Si: el lexer ignora espacios.
+- Si debe estar separado del paréntesis: `Si (...)` es válido; `Si(...)` genera error sintáctico.
 - Se detiene en el primer error; no recupera ni enumera errores posteriores.
 
 ### Ejercicios de errores sintácticos
@@ -631,3 +631,11 @@ La barra lateral queda delimitada por un separador vertical. El panel RESULTADOS
 - [Manual del programador](docs/Manual_del_programador_Costenol.pdf): arquitectura, clases, convenciones, pruebas y empaquetado.
 - [Guía de sustentación](docs/Guia_de_sustentacion_Costenol.pdf): guion, ejemplos y preguntas.
 - Los ocho casos verificados están en `ejemplos/sustentacion/`.
+
+## Capturas con tipo estricto
+
+La asignación directa de una captura exige el mismo tipo que la variable: `n Real; n = Captura.Entero();` genera un error semántico y propone `Captura.Real()`. Se aplica también con paréntesis. La promoción de valores Entero a Real sigue permitida, por ejemplo `n Real; n = 4;`.
+
+La separación después de `Si` se comprueba en el parser usando la ubicación de los tokens. No afecta las llamadas `Mensaje.Texto()` ni `Captura.Entero()`.
+
+El manual del programador y la guía de sustentación se actualizaron el 24/11/2026: integran las capturas con tipo estricto, la separación de `Si (` y las 96 pruebas aprobadas. La nota TXT conserva un resumen de esos cambios; las guías breve y de estudio antiguas son material histórico.

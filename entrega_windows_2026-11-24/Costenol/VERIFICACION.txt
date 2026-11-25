@@ -1,0 +1,13 @@
+VERIFICACIÓN - 24/11/2026
+Python 3.12.14 / PyInstaller 6.22.3 / Windows x64.
+96 pruebas de fuente aprobadas, sin omisiones (62,646 s).
+Las pruebas gráficas usan un adaptador de rutas Tcl/Tk en el entorno aislado.
+Se emitieron avisos Tcl ThemeChanged durante la destrucción de algunas ventanas de prueba;
+no hubo pruebas fallidas.
+Núcleo extraído del EXE: tipo estricto de captura, Si separado,
+sintaxis válida y ejecución Real comprobados.
+Recursos nativos y logos presentes; ZIP validados por CRC.
+Manual del programador y guía de sustentación actualizados al 24/11/2026.
+Ambos PDF renderizados y revisados; correcciones y 96 pruebas integradas.
+Esta actualización documental no modifica el ejecutable comprobado.
+No se ha probado esta compilación en un segundo equipo en esta sesión.

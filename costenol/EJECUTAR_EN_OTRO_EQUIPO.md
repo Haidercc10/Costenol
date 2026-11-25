@@ -23,5 +23,6 @@ Python. La interfaz necesita un escritorio gráfico. No requiere red para operar
 El paquete portable Costenol_Windows_x64.zip evita instalar Python en el equipo
 receptor. Para reconstruir ese ejecutable consulta empaquetado/README.md.
 
-La documentación PDF de docs corresponde a versiones anteriores del proyecto;
-README.md y las docstrings describen también las actualizaciones posteriores.
+El manual del programador y la guía de sustentación de docs están actualizados al
+24/11/2026 e incluyen capturas con tipo estricto, separación de Si y 96 pruebas.
+Las guías breve y de estudio antiguas se conservan como material histórico.

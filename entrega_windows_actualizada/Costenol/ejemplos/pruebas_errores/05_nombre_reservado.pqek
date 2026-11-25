@@ -1,3 +1,0 @@
-// Error semantico: nombre reservado con mezcla de mayusculas //
-eNtErO Entero;
-eNtErO = 10;

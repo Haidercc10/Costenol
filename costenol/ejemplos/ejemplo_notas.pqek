@@ -1,0 +1,11 @@
+// Las tres variables Real usan Captura.Real() //
+n1 Real;
+n2 Real;
+n3 Real;
+Mensaje.Texto("Digite nota 1");
+n1 = Captura.Real();
+Mensaje.Texto("Digite nota 2");
+n2 = Captura.Real();
+Mensaje.Texto("Digite nota 3");
+n3 = Captura.Real();
+Mensaje.Texto("Notas: " + n1 + ", " + n2 + ", " + n3);

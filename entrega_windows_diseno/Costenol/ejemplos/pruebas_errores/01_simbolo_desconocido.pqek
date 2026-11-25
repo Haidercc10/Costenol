@@ -1,3 +1,0 @@
-// Error lexico: simbolo no permitido //
-edad Entero;
-edad = 20 @ 2;

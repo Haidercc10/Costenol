@@ -89,6 +89,10 @@ class AnalizadorSemantico:
             elif clase == 'Asignacion':
                 destino = self.buscar(nodo, simbolos)
                 tipo = self.expresion(nodo['valor'], simbolos)
+                if nodo['valor']['nodo'] == 'Captura' and tipo != destino['tipo']:
+                    self.error(nodo['valor'],
+                               f"no se puede asignar Captura.{tipo}() a '{nodo['nombre']}' "
+                               f"de tipo {destino['tipo']}; usa Captura.{destino['tipo']}()")
                 if tipo != destino['tipo'] and not (tipo == 'Entero' and destino['tipo'] == 'Real'):
                     self.error(nodo, f"no se puede asignar {tipo} a '{nodo['nombre']}' de tipo {destino['tipo']}")
                 destino['inicializada'] = True
